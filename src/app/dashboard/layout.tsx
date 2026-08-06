@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useSession } from '@/lib/auth-client';
 import { 
   LayoutDashboard, 
   PlusSquare, 
@@ -26,10 +27,18 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
-  // Mock role for now - can be 'User', 'Creator', or 'Admin'
-  const userRole: string = 'Creator';
+  const { data: session, isPending } = useSession();
+  const router = useRouter();
 
-  const userLinks = [
+  // Redirect to login if not authenticated
+  if (!isPending && !session) {
+    router.push('/login');
+    return null; // Return nothing while redirecting
+  }
+
+  const userRole: string = (session?.user as any)?.role || 'User';
+  const userName: string = session?.user?.name || 'User';
+  const userInitial: string = userName.charAt(0).toUpperCase();  const userLinks = [
     { name: 'Profile', href: '/dashboard', icon: User },
     { name: 'Add Prompt', href: '/dashboard/add', icon: PlusSquare },
     { name: 'My Prompts', href: '/dashboard/prompts', icon: List },
@@ -73,10 +82,10 @@ export default function DashboardLayout({
         <div className="p-6 sticky top-16">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xl">
-              U
+              {userInitial}
             </div>
             <div>
-              <div className="font-bold">John Doe</div>
+              <div className="font-bold">{userName}</div>
               <div className="text-xs text-primary">{userRole}</div>
             </div>
           </div>

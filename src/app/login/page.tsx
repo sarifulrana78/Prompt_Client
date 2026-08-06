@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { signIn } from '@/lib/auth-client';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -15,17 +16,33 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: Connect to better-auth API
-    setTimeout(() => {
+    try {
+      const { data, error } = await signIn.email({
+        email,
+        password,
+      });
+      if (error) {
+        toast.error(error.message || 'Login failed');
+      } else {
+        toast.success('Logged in successfully!');
+        router.push('/dashboard');
+      }
+    } catch (err: any) {
+      toast.error('An unexpected error occurred');
+    } finally {
       setLoading(false);
-      toast.success('Logged in successfully!');
-      router.push('/dashboard');
-    }, 1000);
+    }
   };
 
-  const handleGoogleLogin = () => {
-    // TODO: Connect to better-auth Google OAuth
-    toast.info('Redirecting to Google...');
+  const handleGoogleLogin = async () => {
+    try {
+      await signIn.social({
+        provider: 'google',
+        callbackURL: '/dashboard'
+      });
+    } catch (err) {
+      toast.error('Google login failed');
+    }
   };
 
   return (

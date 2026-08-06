@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Lock, UserPlus, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { signUp } from '@/lib/auth-client';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -17,12 +18,24 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: Connect to better-auth API
-    setTimeout(() => {
+    try {
+      const { data, error } = await signUp.email({
+        email,
+        password,
+        name,
+        image: photoURL || undefined
+      });
+      if (error) {
+        toast.error(error.message || 'Registration failed');
+      } else {
+        toast.success('Account created successfully!');
+        router.push('/dashboard');
+      }
+    } catch (err: any) {
+      toast.error('An unexpected error occurred');
+    } finally {
       setLoading(false);
-      toast.success('Account created successfully!');
-      router.push('/login');
-    }, 1000);
+    }
   };
 
   return (

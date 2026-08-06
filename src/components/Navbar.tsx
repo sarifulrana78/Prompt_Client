@@ -1,10 +1,19 @@
+'use client';
+
 import Link from 'next/link';
 import { Search, User, LogOut, Sparkles } from 'lucide-react';
+import { useSession, signOut } from '@/lib/auth-client';
+import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
-  // Mock login state for now
-  const isLoggedIn = false;
+  const { data: session } = useSession();
+  const router = useRouter();
   
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/');
+  };
+
   return (
     <nav className="fixed top-0 w-full z-50 glass border-b border-white/10">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -29,12 +38,12 @@ export default function Navbar() {
             All Prompts
           </Link>
           
-          {isLoggedIn ? (
+          {session ? (
             <>
               <Link href="/dashboard" className="text-sm text-gray-300 hover:text-white transition-colors">
                 Dashboard
               </Link>
-              <button className="flex items-center gap-2 text-sm bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full transition-colors">
+              <button onClick={handleSignOut} className="flex items-center gap-2 text-sm bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full transition-colors">
                 <LogOut className="w-4 h-4" />
                 <span>Logout</span>
               </button>
