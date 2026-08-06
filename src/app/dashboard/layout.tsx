@@ -27,7 +27,7 @@ export default function DashboardLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // Mock role for now - can be 'User', 'Creator', or 'Admin'
-  const userRole = 'Creator';
+  const userRole: string = 'Creator';
 
   const userLinks = [
     { name: 'Profile', href: '/dashboard', icon: User },
