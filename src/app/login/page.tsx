@@ -38,7 +38,7 @@ export default function LoginPage() {
     try {
       await signIn.social({
         provider: 'google',
-        callbackURL: '/dashboard'
+        callbackURL: process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard` : 'http://localhost:3000/dashboard'
       });
     } catch (err) {
       toast.error('Google login failed');
