@@ -1,0 +1,56 @@
+import Link from 'next/link';
+import { Search, User, LogOut, Sparkles } from 'lucide-react';
+
+export default function Navbar() {
+  // Mock login state for now
+  const isLoggedIn = false;
+  
+  return (
+    <nav className="fixed top-0 w-full z-50 glass border-b border-white/10">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <Link href="/" className="text-2xl font-bold tracking-tighter text-white flex items-center gap-2">
+          <Sparkles className="w-6 h-6 text-primary" />
+          <span>Prompt<span className="text-primary">Base</span></span>
+        </Link>
+        
+        <div className="hidden md:flex flex-1 max-w-md mx-8">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input 
+              type="text"
+              placeholder="Search for prompts..." 
+              className="w-full bg-white/5 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-primary transition-colors"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-6">
+          <Link href="/prompts" className="text-sm text-gray-300 hover:text-white transition-colors">
+            All Prompts
+          </Link>
+          
+          {isLoggedIn ? (
+            <>
+              <Link href="/dashboard" className="text-sm text-gray-300 hover:text-white transition-colors">
+                Dashboard
+              </Link>
+              <button className="flex items-center gap-2 text-sm bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full transition-colors">
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </button>
+            </>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Link href="/login" className="text-sm text-gray-300 hover:text-white transition-colors">
+                Login
+              </Link>
+              <Link href="/register" className="text-sm bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-full transition-colors font-medium">
+                Sign Up
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
+}
