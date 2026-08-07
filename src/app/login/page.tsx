@@ -36,9 +36,10 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
       await signIn.social({
         provider: 'google',
-        callbackURL: process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard` : 'http://localhost:3000/dashboard'
+        callbackURL: `${origin}/dashboard`
       });
     } catch (err) {
       toast.error('Google login failed');
