@@ -1,10 +1,42 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Search, Sparkles, Zap, Shield, Star, Users } from 'lucide-react';
+import PromptCard from '@/components/PromptCard';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export default function Home() {
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [featuredPrompts, setFeaturedPrompts] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchFeatured();
+  }, []);
+
+  const fetchFeatured = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/prompts/featured`);
+      const data = await res.json();
+      if (data.success && data.prompts?.length > 0) {
+        setFeaturedPrompts(data.prompts);
+      }
+    } catch (err) {
+      console.error('Failed to fetch featured prompts:', err);
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/prompts?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -43,23 +75,25 @@ export default function Home() {
               Discover, share, and monetize high-quality prompts for ChatGPT, Midjourney, Claude, and more. Boost your productivity today.
             </p>
             
-            <div className="relative max-w-2xl mx-auto mb-8">
+            <form onSubmit={handleSearchSubmit} className="relative max-w-2xl mx-auto mb-8">
               <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-gray-400" />
               </div>
               <input
                 type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-full py-4 pl-12 pr-32 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all glass"
                 placeholder="Search for 'marketing copy' or 'logo design'..."
               />
-              <button className="absolute inset-y-2 right-2 px-6 bg-primary hover:bg-primary-hover text-white rounded-full font-medium transition-colors">
+              <button type="submit" className="absolute inset-y-2 right-2 px-6 bg-primary hover:bg-primary-hover text-white rounded-full font-medium transition-colors">
                 Search
               </button>
-            </div>
+            </form>
             
             <div className="flex flex-wrap justify-center gap-2">
               <span className="text-sm text-gray-500 mr-2">Trending:</span>
-              {['Midjourney V6', 'SEO Articles', 'Web Development', 'Logo Design'].map((tag) => (
+              {['ChatGPT', 'SEO', 'Marketing', 'Development'].map((tag) => (
                 <Link key={tag} href={`/prompts?search=${tag}`} className="text-sm text-gray-300 hover:text-primary transition-colors px-3 py-1 rounded-full bg-white/5 border border-white/10">
                   {tag}
                 </Link>
@@ -82,43 +116,31 @@ export default function Home() {
             </Link>
           </div>
           
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <motion.div key={i} variants={itemVariants} className="bg-card border border-border rounded-xl overflow-hidden card-hover">
-                <div className="h-48 bg-gradient-to-br from-gray-800 to-gray-900 relative">
-                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-xs px-2 py-1 rounded text-white font-medium">
-                    ChatGPT
-                  </div>
-                  <div className="absolute top-3 right-3 bg-primary/20 text-primary text-xs px-2 py-1 rounded font-medium border border-primary/20">
-                    Marketing
-                  </div>
-                </div>
-                <div className="p-5">
-                  <h3 className="text-lg font-semibold mb-2 text-white">Ultimate SEO Blog Post Generator</h3>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                    <span className="text-sm font-medium">4.9</span>
-                    <span className="text-xs text-gray-400">(128 reviews)</span>
-                  </div>
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-gray-700"></div>
-                      <span className="text-xs text-gray-400">Alex J.</span>
-                    </div>
-                    <span className="text-xs font-medium bg-white/5 px-2 py-1 rounded text-gray-300">
-                      1.2k copies
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+          {featuredPrompts.length > 0 ? (
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {featuredPrompts.map((prompt) => (
+                <motion.div key={prompt._id || prompt.id} variants={itemVariants}>
+                  <PromptCard
+                    id={prompt._id || prompt.id}
+                    title={prompt.title}
+                    category={prompt.category}
+                    aiTool={prompt.aiTool}
+                    copyCount={prompt.copyCount || 0}
+                    creatorName={prompt.creator?.name || 'Anonymous'}
+                    creatorPhoto={prompt.creator?.photoURL || prompt.creator?.image}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <p className="text-gray-500 text-center py-8">Explore our prompts collection by clicking "View All".</p>
+          )}
         </div>
       </section>
 
@@ -148,12 +170,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Popular Categories (Extra Section 1) */}
+      {/* Popular Categories */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-12 text-center">Browse by Category</h2>
           <div className="flex flex-wrap justify-center gap-4">
-            {['Marketing', 'Coding', 'Writing', 'Design', 'Business', 'Education', 'Productivity'].map((cat) => (
+            {['Marketing', 'Development', 'Writing', 'Design', 'Business'].map((cat) => (
               <Link key={cat} href={`/prompts?category=${cat}`} className="px-6 py-4 rounded-xl bg-card border border-border hover:border-primary transition-colors text-center w-32 sm:w-40">
                 <div className="font-medium">{cat}</div>
               </Link>
@@ -162,7 +184,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Call to Action (Extra Section 2) */}
+      {/* Call to Action */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-primary/10"></div>
         <div className="container mx-auto px-4 relative z-10 text-center">

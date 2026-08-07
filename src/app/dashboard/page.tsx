@@ -1,16 +1,44 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSession } from '@/lib/auth-client';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export default function DashboardProfile() {
-  // Mock data
-  const user = {
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'User',
-    subscription: 'Free',
-    totalPrompts: 2,
+  const { data: session } = useSession();
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/users/profile`, { credentials: 'include' });
+      const data = await res.json();
+      if (data.success) {
+        setProfile(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch profile:', err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const user = {
+    name: session?.user?.name || profile?.user?.name || 'User',
+    email: session?.user?.email || profile?.user?.email || 'user@example.com',
+    image: session?.user?.image || profile?.user?.photoURL,
+    role: (session?.user as any)?.role || profile?.user?.role || 'User',
+    subscription: (session?.user as any)?.subscription || profile?.user?.subscription || 'Free',
+    totalPrompts: profile?.totalPrompts || 0,
+  };
+
+  const initial = user.name.charAt(0).toUpperCase();
 
   return (
     <div className="max-w-3xl">
@@ -22,7 +50,11 @@ export default function DashboardProfile() {
         <div className="flex flex-col md:flex-row items-start md:items-center gap-8 relative z-10">
           <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-primary to-blue-500 p-[2px]">
             <div className="w-full h-full rounded-full bg-card flex items-center justify-center text-3xl font-bold text-white overflow-hidden">
-              J
+              {user.image ? (
+                <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                initial
+              )}
             </div>
           </div>
           
