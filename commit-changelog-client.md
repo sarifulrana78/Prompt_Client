@@ -21,3 +21,4 @@ This file tracks incremental client work for commit count requirements.
 - Added note: add prompt page uses /api endpoint for prompt creation.
 - Added note: admin users page fetches user list from backend via /api/users.
 - Added note: saved prompts page fetches saved prompts from /api/prompts/saved.
+- Added note: home page uses /api for prompt list fetching through proxy.
