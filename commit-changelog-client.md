@@ -8,3 +8,4 @@ This file tracks incremental client work for commit count requirements.
 - Added note: client pages standardized API fetch base path to /api for proxied requests.
 - Added note: pricing page route created and integrated into client app.
 - Added note: dashboard page uses useSession hook for authenticated state.
+- Added note: prompt detail page fetches prompt data through /api backend route.
