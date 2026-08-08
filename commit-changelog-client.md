@@ -6,3 +6,4 @@ This file tracks incremental client work for commit count requirements.
 - Added note: auth client baseURL now trims /api and includes credentials.
 - Added note: login and register Google OAuth callbackURL use frontend origin.
 - Added note: client pages standardized API fetch base path to /api for proxied requests.
+- Added note: pricing page route created and integrated into client app.
