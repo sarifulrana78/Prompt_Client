@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Loader2, Bookmark } from 'lucide-react';
 import PromptCard from '@/components/PromptCard';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE = '/api';
 
 export default function SavedPromptsPage() {
   const [prompts, setPrompts] = useState<any[]>([]);

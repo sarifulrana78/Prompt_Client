@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Trash2, Edit, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE = '/api';
 
 export default function MyPromptsPage() {
   const [prompts, setPrompts] = useState<any[]>([]);

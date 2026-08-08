@@ -7,7 +7,7 @@ import { Star, Copy, Bookmark, Flag, ChevronLeft, Lock, Loader2, Send } from 'lu
 import { toast } from 'react-toastify';
 import { useSession } from '@/lib/auth-client';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE = '/api';
 
 export default function PromptDetailsPage() {
   const params = useParams();

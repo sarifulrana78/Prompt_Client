@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Lock, UserPlus, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { signUp } from '@/lib/auth-client';
+import { signIn, signUp } from '@/lib/auth-client';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');

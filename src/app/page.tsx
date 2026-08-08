@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Search, Sparkles, Zap, Shield, Star, Users } from 'lucide-react';
 import PromptCard from '@/components/PromptCard';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE = '/api';
 
 export default function Home() {
   const router = useRouter();
