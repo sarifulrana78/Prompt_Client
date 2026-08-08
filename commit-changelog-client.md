@@ -4,3 +4,4 @@ This file tracks incremental client work for commit count requirements.
 
 - Added note: API proxy rewrite in next.config.ts uses base URL normalization.
 - Added note: auth client baseURL now trims /api and includes credentials.
+- Added note: login and register Google OAuth callbackURL use frontend origin.
