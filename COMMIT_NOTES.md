@@ -4,3 +4,4 @@
 - Document useSession hook usage for dashboard authentication state.
 - Document dashboard API path normalization to /api.
 - Document social login flow on registration page and callback URL usage.
+- Document login page Google OAuth callback URL and signIn.social usage.
