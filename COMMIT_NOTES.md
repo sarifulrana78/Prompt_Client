@@ -9,3 +9,4 @@
 - Document standardizing API_BASE to local /api proxy across pages.
 - Document including credentials in auth client fetchOptions for cookie auth.
 - Document NEXT_PUBLIC_API_URL environment variable usage in the client.
+- Document dashboard page fetch behavior and backend endpoint mapping.
