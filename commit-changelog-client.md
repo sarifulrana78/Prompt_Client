@@ -7,3 +7,4 @@ This file tracks incremental client work for commit count requirements.
 - Added note: login and register Google OAuth callbackURL use frontend origin.
 - Added note: client pages standardized API fetch base path to /api for proxied requests.
 - Added note: pricing page route created and integrated into client app.
+- Added note: dashboard page uses useSession hook for authenticated state.
