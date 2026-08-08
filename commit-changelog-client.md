@@ -9,3 +9,4 @@ This file tracks incremental client work for commit count requirements.
 - Added note: pricing page route created and integrated into client app.
 - Added note: dashboard page uses useSession hook for authenticated state.
 - Added note: prompt detail page fetches prompt data through /api backend route.
+- Added note: saved prompts and reviews use authenticated API routes.
