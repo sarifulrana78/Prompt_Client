@@ -23,3 +23,4 @@ This file tracks incremental client work for commit count requirements.
 - Added note: saved prompts page fetches saved prompts from /api/prompts/saved.
 - Added note: home page uses /api for prompt list fetching through proxy.
 - Added note: prompts page uses proxied backend search API for filters and pagination.
+- Added note: register/login pages now share client auth config for OAuth and email auth.
