@@ -13,3 +13,4 @@
 - Document prompt details page dependency on auth session for actions.
 - Document register page import of signIn and signUp from auth client.
 - Document client routes and API endpoint stability improvements.
+- Document usage of Next.js App Router routes with client auth and data fetches.
