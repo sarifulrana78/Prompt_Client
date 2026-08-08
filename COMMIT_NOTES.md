@@ -8,3 +8,4 @@
 - Document addition of pricing page route in client app.
 - Document standardizing API_BASE to local /api proxy across pages.
 - Document including credentials in auth client fetchOptions for cookie auth.
+- Document NEXT_PUBLIC_API_URL environment variable usage in the client.
