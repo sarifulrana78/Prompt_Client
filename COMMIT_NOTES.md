@@ -17,3 +17,4 @@
 - Document fetch error handling guidance for frontend API calls.
 - Document client-side session state reading and dashboard rendering.
 - Document storing and reading user session with better-auth hooks.
+- Document client service proxy configuration and development base URL.
