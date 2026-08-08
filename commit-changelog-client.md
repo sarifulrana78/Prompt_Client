@@ -20,3 +20,4 @@ This file tracks incremental client work for commit count requirements.
 - Added note: social login flow references Google provider in auth client documentation.
 - Added note: add prompt page uses /api endpoint for prompt creation.
 - Added note: admin users page fetches user list from backend via /api/users.
+- Added note: saved prompts page fetches saved prompts from /api/prompts/saved.
