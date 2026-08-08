@@ -15,3 +15,4 @@ This file tracks incremental client work for commit count requirements.
 - Added note: API_BASE normalization now covers search, dashboard, prompt, and saved routes.
 - Added note: fetchOptions.credentials set to include for cookie-based auth across cross-site requests.
 - Added note: client uses NEXT_PUBLIC_API_URL for backend proxy configuration.
+- Added note: next.config.ts rewrites /api/* to backend API base for local development.
