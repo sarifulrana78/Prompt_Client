@@ -12,3 +12,4 @@ This file tracks incremental client work for commit count requirements.
 - Added note: saved prompts and reviews use authenticated API routes.
 - Added note: register page uses signUp.email and signIn.social correctly.
 - Added note: login page shows toast on auth errors and handles unexpected failures.
+- Added note: API_BASE normalization now covers search, dashboard, prompt, and saved routes.
