@@ -19,7 +19,7 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data, error } = await signUp.email({
+      const { error } = await signUp.email({
         email,
         password,
         name,
@@ -31,7 +31,8 @@ export default function RegisterPage() {
         toast.success('Account created successfully!');
         router.push('/dashboard');
       }
-    } catch (err: any) {
+    } catch (error: unknown) {
+      console.error(error);
       toast.error('An unexpected error occurred');
     } finally {
       setLoading(false);
@@ -45,7 +46,8 @@ export default function RegisterPage() {
         provider: 'google',
         callbackURL: `${origin}/dashboard`
       });
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error('Google signup failed');
     }
   };

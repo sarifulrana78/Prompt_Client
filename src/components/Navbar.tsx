@@ -1,13 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, User, LogOut, Sparkles } from 'lucide-react';
+import { Search, LogOut, Sparkles, Moon, Sun } from 'lucide-react';
 import { useSession, signOut } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
+import { useTheme } from '@/lib/theme';
 
 export default function Navbar() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
   
   const handleSignOut = async () => {
     await signOut();
@@ -33,7 +35,11 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
+          <button onClick={toggleTheme} className="text-gray-200 hover:text-white transition-colors">
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+
           <Link href="/prompts" className="text-sm text-gray-300 hover:text-white transition-colors">
             All Prompts
           </Link>

@@ -17,7 +17,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data, error } = await signIn.email({
+      const { error } = await signIn.email({
         email,
         password,
       });
@@ -27,7 +27,8 @@ export default function LoginPage() {
         toast.success('Logged in successfully!');
         router.push('/dashboard');
       }
-    } catch (err: any) {
+    } catch (error: unknown) {
+      console.error(error);
       toast.error('An unexpected error occurred');
     } finally {
       setLoading(false);
@@ -41,7 +42,8 @@ export default function LoginPage() {
         provider: 'google',
         callbackURL: `${origin}/dashboard`
       });
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error('Google login failed');
     }
   };
@@ -124,7 +126,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-sm text-gray-400 mt-6">
-          Don't have an account? <Link href="/register" className="text-primary hover:underline">Sign up</Link>
+          Don&apos;t have an account? <Link href="/register" className="text-primary hover:underline">Sign up</Link>
         </p>
       </div>
     </div>

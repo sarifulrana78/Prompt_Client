@@ -7,6 +7,16 @@ import PromptCard from '@/components/PromptCard';
 
 const API_BASE = '/api';
 
+type PromptListItem = {
+  _id: string;
+  title: string;
+  category?: string;
+  aiTool?: string;
+  copyCount?: number;
+  description?: string;
+  creator?: { name?: string; photoURL?: string; image?: string };
+};
+
 function PromptsContent() {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get('search') || '';
@@ -19,42 +29,42 @@ function PromptsContent() {
   const [sortBy, setSortBy] = useState('latest');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [prompts, setPrompts] = useState<any[]>([]);
+  const [prompts, setPrompts] = useState<PromptListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
-    fetchPrompts();
-  }, [searchTerm, category, aiTool, difficulty, sortBy, page]);
+    const loadPrompts = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (searchTerm) params.append('search', searchTerm);
+        if (category) params.append('category', category);
+        if (aiTool) params.append('aiTool', aiTool);
+        if (difficulty) params.append('difficulty', difficulty);
+        if (sortBy) params.append('sort', sortBy);
+        params.append('page', page.toString());
+        params.append('limit', '9');
 
-  const fetchPrompts = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-      if (category) params.append('category', category);
-      if (aiTool) params.append('aiTool', aiTool);
-      if (difficulty) params.append('difficulty', difficulty);
-      if (sortBy) params.append('sort', sortBy);
-      params.append('page', page.toString());
-      params.append('limit', '9');
+        const res = await fetch(`${API_BASE}/prompts?${params.toString()}`);
+        const data = await res.json();
 
-      const res = await fetch(`${API_BASE}/prompts?${params.toString()}`);
-      const data = await res.json();
-
-      if (data.success) {
-        setPrompts(data.prompts || []);
-        setTotalPages(data.totalPages || 1);
-      } else {
+        if (data.success) {
+          setPrompts(data.prompts || []);
+          setTotalPages(data.totalPages || 1);
+        } else {
+          setPrompts([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch prompts:', error);
         setPrompts([]);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Failed to fetch prompts:', error);
-      setPrompts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    void loadPrompts();
+  }, [searchTerm, category, aiTool, difficulty, sortBy, page]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {

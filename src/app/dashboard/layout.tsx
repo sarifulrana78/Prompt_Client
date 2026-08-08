@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { 
-  LayoutDashboard, 
   PlusSquare, 
   List, 
   Bookmark, 
@@ -36,7 +35,7 @@ export default function DashboardLayout({
     return null; // Return nothing while redirecting
   }
 
-  const userRole: string = (session?.user as any)?.role || 'User';
+  const userRole: string = (session?.user as { role?: string } | undefined)?.role || 'User';
   const userName: string = session?.user?.name || 'User';
   const userInitial: string = userName.charAt(0).toUpperCase();  const userLinks = [
     { name: 'Profile', href: '/dashboard', icon: User },

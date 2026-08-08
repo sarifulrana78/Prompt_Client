@@ -4,31 +4,40 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, Sparkles, Zap, Shield, Star, Users } from 'lucide-react';
+import { Search, Sparkles, Zap, Shield, Users } from 'lucide-react';
 import PromptCard from '@/components/PromptCard';
 
 const API_BASE = '/api';
 
+type FeaturedPrompt = {
+  _id: string;
+  title: string;
+  category?: string;
+  aiTool?: string;
+  copyCount?: number;
+  creator?: { name?: string; photoURL?: string; image?: string };
+};
+
 export default function Home() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
-  const [featuredPrompts, setFeaturedPrompts] = useState<any[]>([]);
+  const [featuredPrompts, setFeaturedPrompts] = useState<FeaturedPrompt[]>([]);
 
   useEffect(() => {
-    fetchFeatured();
-  }, []);
-
-  const fetchFeatured = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/prompts/featured`);
-      const data = await res.json();
-      if (data.success && data.prompts?.length > 0) {
-        setFeaturedPrompts(data.prompts);
+    const loadFeatured = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/prompts/featured`);
+        const data = await res.json();
+        if (data.success && data.prompts?.length > 0) {
+          setFeaturedPrompts(data.prompts);
+        }
+      } catch (err) {
+        console.error('Failed to fetch featured prompts:', err);
       }
-    } catch (err) {
-      console.error('Failed to fetch featured prompts:', err);
-    }
-  };
+    };
+
+    void loadFeatured();
+  }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +65,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       {/* Hero Banner Section */}
       <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-primary/20 via-background to-background"></div>
         <div className="container mx-auto px-4 relative z-10">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
@@ -69,7 +78,7 @@ export default function Home() {
               <span>The #1 Marketplace for AI Prompts</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
-              Unlock the Power of <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Generative AI</span>
+              Unlock the Power of <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-blue-400">Generative AI</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
               Discover, share, and monetize high-quality prompts for ChatGPT, Midjourney, Claude, and more. Boost your productivity today.
@@ -139,7 +148,7 @@ export default function Home() {
               ))}
             </motion.div>
           ) : (
-            <p className="text-gray-500 text-center py-8">Explore our prompts collection by clicking "View All".</p>
+            <p className="text-gray-500 text-center py-8">Explore our prompts collection by clicking &quot;View All&quot;.</p>
           )}
         </div>
       </section>

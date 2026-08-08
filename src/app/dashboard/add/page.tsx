@@ -37,7 +37,8 @@ export default function AddPromptPage() {
       } else {
         toast.error(data.message || 'Failed to create prompt');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error('An error occurred');
     } finally {
       setLoading(false);

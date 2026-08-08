@@ -20,7 +20,8 @@ export default function CheckoutPage() {
       } else {
         toast.error(data.message || 'Unable to start checkout');
       }
-    } catch (error) {
+    } catch (err: unknown) {
+      console.error(err);
       toast.error('Payment checkout failed. Please try again.');
     } finally {
       setLoading(false);

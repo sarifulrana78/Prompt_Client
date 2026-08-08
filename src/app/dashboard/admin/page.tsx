@@ -1,6 +1,6 @@
 'use client';
 
-import { Users, List, CreditCard, Shield } from 'lucide-react';
+import { Users, List, CreditCard, Shield, Flag } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminDashboardPage() {
@@ -28,6 +28,12 @@ export default function AdminDashboardPage() {
           <CreditCard className="w-6 h-6 text-yellow-400 mb-3" />
           <h3 className="font-semibold text-lg">Payments</h3>
           <p className="text-sm text-gray-400">Track subscriptions & Stripe logs</p>
+        </Link>
+
+        <Link href="/dashboard/admin/reports" className="bg-card border border-border p-6 rounded-2xl hover:border-primary transition-colors">
+          <Flag className="w-6 h-6 text-red-400 mb-3" />
+          <h3 className="font-semibold text-lg">Reported Prompts</h3>
+          <p className="text-sm text-gray-400">Review prompts reported by users</p>
         </Link>
       </div>
     </div>

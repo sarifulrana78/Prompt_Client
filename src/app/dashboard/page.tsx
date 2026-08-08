@@ -1,40 +1,49 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from '@/lib/auth-client';
 
 const API_BASE = '/api';
 
+type ProfileData = {
+  user?: {
+    name?: string;
+    email?: string;
+    photoURL?: string;
+    role?: string;
+    subscription?: string;
+  };
+  totalPrompts?: number;
+};
+
 export default function DashboardProfile() {
   const { data: session } = useSession();
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/users/profile`, { credentials: 'include' });
-      const data = await res.json();
-      if (data.success) {
-        setProfile(data);
+    const loadProfile = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/users/profile`, { credentials: 'include' });
+        const data = await res.json();
+        if (data.success) {
+          setProfile(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
       }
-    } catch (err) {
-      console.error('Failed to fetch profile:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    void loadProfile();
+  }, []);
 
   const user = {
     name: session?.user?.name || profile?.user?.name || 'User',
     email: session?.user?.email || profile?.user?.email || 'user@example.com',
     image: session?.user?.image || profile?.user?.photoURL,
-    role: (session?.user as any)?.role || profile?.user?.role || 'User',
-    subscription: (session?.user as any)?.subscription || profile?.user?.subscription || 'Free',
+    role: (session?.user as { role?: string } | undefined)?.role || profile?.user?.role || 'User',
+    subscription: (session?.user as { subscription?: string } | undefined)?.subscription || profile?.user?.subscription || 'Free',
     totalPrompts: profile?.totalPrompts || 0,
   };
 
@@ -49,9 +58,9 @@ export default function DashboardProfile() {
         
         <div className="flex flex-col md:flex-row items-start md:items-center gap-8 relative z-10">
           <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-primary to-blue-500 p-[2px]">
-            <div className="w-full h-full rounded-full bg-card flex items-center justify-center text-3xl font-bold text-white overflow-hidden">
+            <div className="relative w-full h-full rounded-full bg-card flex items-center justify-center text-3xl font-bold text-white overflow-hidden">
               {user.image ? (
-                <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
+                <Image src={user.image} alt={user.name} fill className="object-cover" />
               ) : (
                 initial
               )}
@@ -65,7 +74,7 @@ export default function DashboardProfile() {
             <div className="flex flex-wrap gap-3">
               <span className="bg-white/10 px-3 py-1 rounded-md text-sm font-medium">Role: {user.role}</span>
               <span className={`px-3 py-1 rounded-md text-sm font-medium ${
-                user.subscription === 'Premium' ? 'bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 text-yellow-500 border border-yellow-500/30' : 'bg-gray-800 text-gray-300'
+                user.subscription === 'Premium' ? 'bg-linear-to-r from-yellow-500/20 to-yellow-600/20 text-yellow-500 border border-yellow-500/30' : 'bg-gray-800 text-gray-300'
               }`}>
                 Plan: {user.subscription}
               </span>
@@ -76,7 +85,7 @@ export default function DashboardProfile() {
       </div>
 
       {user.subscription === 'Free' && (
-        <div className="bg-gradient-to-r from-primary/10 to-blue-500/10 border border-primary/20 rounded-2xl p-8 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="bg-linear-to-r from-primary/10 to-blue-500/10 border border-primary/20 rounded-2xl p-8 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h3 className="text-xl font-bold text-white mb-2">Upgrade to Premium</h3>
             <p className="text-gray-300">Unlock unlimited private prompts, exclusive tools, and advanced analytics for just $5.</p>

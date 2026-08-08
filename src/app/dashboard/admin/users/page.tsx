@@ -6,27 +6,34 @@ import { toast } from 'react-toastify';
 
 const API_BASE = '/api';
 
+type AdminUser = {
+  _id: string;
+  name?: string;
+  email?: string;
+  role?: string;
+};
+
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/users/admin/all`, { credentials: 'include' });
-      const data = await res.json();
-      if (data.success) {
-        setUsers(data.users || []);
+    const loadUsers = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/users/admin/all`, { credentials: 'include' });
+        const data = await res.json();
+        if (data.success) {
+          setUsers(data.users || []);
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Error fetching users:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    void loadUsers();
+  }, []);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
@@ -43,7 +50,8 @@ export default function AdminUsersPage() {
       } else {
         toast.error(data.message || 'Failed to update role');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error('Error updating role');
     }
   };

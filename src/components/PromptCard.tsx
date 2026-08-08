@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { Star } from 'lucide-react';
 
@@ -36,9 +37,9 @@ export default function PromptCard({
         <div className="mt-auto">
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-border mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gray-700 overflow-hidden">
+              <div className="relative w-6 h-6 rounded-full bg-gray-700 overflow-hidden">
                 {creatorPhoto ? (
-                  <img src={creatorPhoto} alt={creatorName} className="w-full h-full object-cover" />
+                  <Image src={creatorPhoto} alt={creatorName} fill className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white bg-primary">
                     {creatorName.charAt(0)}

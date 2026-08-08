@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Star, Copy, Bookmark, Flag, ChevronLeft, Lock, Loader2, Send } from 'lucide-react';
@@ -9,13 +10,49 @@ import { useSession } from '@/lib/auth-client';
 
 const API_BASE = '/api';
 
+type PromptCreator = {
+  _id: string;
+  name?: string;
+  email?: string;
+  photoURL?: string;
+  image?: string;
+  role?: string;
+};
+
+type PromptContent = {
+  _id: string;
+  title: string;
+  description: string;
+  content: string;
+  category: string;
+  aiTool: string;
+  difficulty: string;
+  visibility: string;
+  copyCount?: number;
+  bookmarkedBy?: string[];
+  creator?: PromptCreator;
+  createdAt?: string;
+};
+
+type ReviewItem = {
+  _id: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  user?: {
+    name?: string;
+    photoURL?: string;
+    email?: string;
+  };
+};
+
 export default function PromptDetailsPage() {
   const params = useParams();
   const id = params?.id as string;
   const { data: session } = useSession();
 
-  const [prompt, setPrompt] = useState<any>(null);
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [prompt, setPrompt] = useState<PromptContent | null>(null);
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
@@ -25,35 +62,7 @@ export default function PromptDetailsPage() {
   const [newComment, setNewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      fetchPrompt();
-      fetchReviews();
-    }
-  }, [id]);
-
-  const fetchPrompt = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/prompts/${id}`, { credentials: 'include' });
-      const data = await res.json();
-      if (data.success) {
-        setPrompt(data.prompt);
-        setIsLocked(data.isLocked || false);
-        if (session && data.prompt.bookmarkedBy?.includes((session.user as any).id)) {
-          setIsBookmarked(true);
-        }
-      } else {
-        toast.error(data.message || 'Prompt not found');
-      }
-    } catch (err) {
-      console.error('Error fetching prompt:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE}/prompts/${id}/reviews`);
       const data = await res.json();
@@ -63,7 +72,40 @@ export default function PromptDetailsPage() {
     } catch (err) {
       console.error('Error fetching reviews:', err);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const loadPrompt = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/prompts/${id}`, { credentials: 'include' });
+        const data = await res.json();
+        if (data.success) {
+          const promptData = data.prompt as PromptContent;
+          setPrompt(promptData);
+          setIsLocked(data.isLocked || false);
+
+          const userId = (session?.user as { id?: string } | undefined)?.id;
+          if (userId && promptData.bookmarkedBy?.includes(userId)) {
+            setIsBookmarked(true);
+          }
+        } else {
+          toast.error(data.message || 'Prompt not found');
+        }
+      } catch (err) {
+        console.error('Error fetching prompt:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void (async () => {
+      await loadPrompt();
+      await fetchReviews();
+    })();
+  }, [fetchReviews, id, session?.user]);
 
   const handleCopy = async () => {
     if (!prompt) return;
@@ -71,8 +113,9 @@ export default function PromptDetailsPage() {
       await fetch(`${API_BASE}/prompts/${id}/copy`, { method: 'POST', credentials: 'include' });
       navigator.clipboard.writeText(prompt.content);
       toast.success('Prompt copied to clipboard!');
-      setPrompt((prev: any) => ({ ...prev, copyCount: (prev?.copyCount || 0) + 1 }));
-    } catch (err) {
+      setPrompt((prev) => prev ? { ...prev, copyCount: (prev.copyCount || 0) + 1 } : prev);
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to copy prompt');
     }
   };
@@ -85,8 +128,25 @@ export default function PromptDetailsPage() {
         setIsBookmarked(data.isBookmarked);
         toast.success(data.isBookmarked ? 'Prompt bookmarked' : 'Bookmark removed');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to update bookmark');
+    }
+  };
+
+  const handleFork = async () => {
+    if (!prompt) return;
+    try {
+      const res = await fetch(`${API_BASE}/prompts/${id}/fork`, { method: 'POST', credentials: 'include' });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Prompt forked to your account!');
+      } else {
+        toast.error(data.message || 'Failed to fork prompt');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Error while forking prompt');
     }
   };
 
@@ -109,7 +169,8 @@ export default function PromptDetailsPage() {
       } else {
         toast.error(data.message || 'Failed to add review');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error('Error submitting review');
     } finally {
       setSubmittingReview(false);
@@ -267,18 +328,20 @@ export default function PromptDetailsPage() {
                   Upgrade to Premium
                 </Link>
               </div>
+            )}
 
             {/* Reviews List */}
             <div className="space-y-4">
               {reviews.length === 0 ? (
                 <p className="text-gray-500 text-sm text-center py-4">No reviews yet. Be the first to leave one!</p>
               ) : (
-                reviews.map((rev: any) => (
+                reviews.map((rev) => (
                   <div key={rev._id} className="bg-card border border-border rounded-xl p-5">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden">
                           {rev.user?.photoURL ? (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img src={rev.user.photoURL} alt={rev.user.name} className="w-full h-full object-cover" />
                           ) : (
                             rev.user?.name?.charAt(0) || 'U'
@@ -308,10 +371,10 @@ export default function PromptDetailsPage() {
           <div className="bg-card border border-border rounded-xl p-6">
             <h3 className="font-semibold mb-4 border-b border-border pb-4">Creator Info</h3>
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-blue-500 p-[2px]">
-                <div className="w-full h-full rounded-full bg-card overflow-hidden flex items-center justify-center text-primary font-bold text-lg">
+              <div className="w-12 h-12 rounded-full bg-linear-to-tr from-primary to-blue-500 p-0.5">
+                <div className="relative w-full h-full rounded-full bg-card overflow-hidden flex items-center justify-center text-primary font-bold text-lg">
                   {prompt.creator?.photoURL || prompt.creator?.image ? (
-                    <img src={prompt.creator?.photoURL || prompt.creator?.image} alt={prompt.creator?.name} className="w-full h-full object-cover" />
+                    <Image src={prompt.creator?.photoURL || prompt.creator?.image || ''} alt={prompt.creator?.name || 'Creator'} fill className="object-cover" />
                   ) : (
                     prompt.creator?.name?.charAt(0) || 'C'
                   )}
@@ -354,6 +417,15 @@ export default function PromptDetailsPage() {
               <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} /> 
               {isBookmarked ? 'Saved to Bookmarks' : 'Bookmark Prompt'}
             </button>
+            <button 
+              onClick={handleFork}
+              className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-colors bg-white/5 hover:bg-white/10 border border-white/10 text-white"
+            >
+              Fork Prompt
+            </button>
+            <Link href={`/prompt/${id}/report`} className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-colors bg-red-500/10 hover:bg-red-500/15 border border-red-500/20 text-red-300">
+              <Flag className="w-4 h-4" /> Report Prompt
+            </Link>
           </div>
         </div>
       </div>

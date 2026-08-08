@@ -2,32 +2,41 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Trash2, Edit, Plus, Loader2 } from 'lucide-react';
+import { Trash2, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const API_BASE = '/api';
 
+type MyPromptListItem = {
+  _id: string;
+  title: string;
+  category?: string;
+  visibility?: string;
+  description?: string;
+  copyCount?: number;
+};
+
 export default function MyPromptsPage() {
-  const [prompts, setPrompts] = useState<any[]>([]);
+  const [prompts, setPrompts] = useState<MyPromptListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchMyPrompts();
-  }, []);
-
-  const fetchMyPrompts = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/users/my-prompts`, { credentials: 'include' });
-      const data = await res.json();
-      if (data.success) {
-        setPrompts(data.prompts || []);
+    const loadMyPrompts = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/users/my-prompts`, { credentials: 'include' });
+        const data = await res.json();
+        if (data.success) {
+          setPrompts(data.prompts || []);
+        }
+      } catch (err) {
+        console.error('Error fetching my prompts:', err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Error fetching my prompts:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    void loadMyPrompts();
+  }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this prompt?')) return;
@@ -43,7 +52,8 @@ export default function MyPromptsPage() {
       } else {
         toast.error(data.message || 'Failed to delete');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error('Error deleting prompt');
     }
   };
@@ -63,7 +73,7 @@ export default function MyPromptsPage() {
         </div>
       ) : prompts.length === 0 ? (
         <div className="text-center py-16 bg-card border border-border rounded-xl">
-          <p className="text-gray-400 mb-4">You haven't created any prompts yet.</p>
+          <p className="text-gray-400 mb-4">You haven&apos;t created any prompts yet.</p>
           <Link href="/dashboard/add" className="text-primary hover:underline text-sm font-medium">
             Create your first prompt &rarr;
           </Link>

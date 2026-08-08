@@ -35,7 +35,8 @@ export default function PaymentSuccessPage() {
         } else {
           toast.error(data.message || 'Payment verification failed');
         }
-      } catch (err) {
+      } catch (err: unknown) {
+        console.error(err);
         toast.error('Unable to verify payment');
       } finally {
         setLoading(false);
