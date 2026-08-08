@@ -10,3 +10,4 @@
 - Document including credentials in auth client fetchOptions for cookie auth.
 - Document NEXT_PUBLIC_API_URL environment variable usage in the client.
 - Document dashboard page fetch behavior and backend endpoint mapping.
+- Document prompt details page dependency on auth session for actions.
