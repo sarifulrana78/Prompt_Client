@@ -17,3 +17,4 @@ This file tracks incremental client work for commit count requirements.
 - Added note: client uses NEXT_PUBLIC_API_URL for backend proxy configuration.
 - Added note: next.config.ts rewrites /api/* to backend API base for local development.
 - Added note: route pages were updated for consistent client-side API usage.
+- Added note: social login flow references Google provider in auth client documentation.
