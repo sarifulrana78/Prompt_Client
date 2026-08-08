@@ -9,11 +9,22 @@ export default function CheckoutPage() {
 
   const handleCheckout = async () => {
     setLoading(true);
-    // Simulate Stripe redirect
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/payments/create-checkout-session', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error(data.message || 'Unable to start checkout');
+      }
+    } catch (error) {
+      toast.error('Payment checkout failed. Please try again.');
+    } finally {
       setLoading(false);
-      toast.info('Redirecting to Stripe payment gateway...');
-    }, 1500);
+    }
   };
 
   return (

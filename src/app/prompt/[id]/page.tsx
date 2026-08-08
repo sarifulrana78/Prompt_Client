@@ -224,7 +224,7 @@ export default function PromptDetailsPage() {
             </div>
 
             {/* Add Review Form */}
-            {session && (
+          {session && !isLocked && (
               <form onSubmit={handleAddReview} className="bg-card border border-border rounded-xl p-5 mb-8 space-y-4">
                 <h4 className="font-semibold text-sm">Leave a Review</h4>
                 <div className="flex items-center gap-2">
@@ -259,6 +259,14 @@ export default function PromptDetailsPage() {
                 </div>
               </form>
             )}
+            {session && isLocked && (
+              <div className="mb-8 rounded-xl border border-border bg-black/50 p-6 text-center text-gray-300">
+                <p className="font-medium mb-2">Premium Access Required</p>
+                <p className="text-sm text-gray-400 mb-4">Unlock this prompt to leave a review.</p>
+                <Link href="/checkout" className="inline-flex items-center justify-center px-5 py-2 bg-primary hover:bg-primary-hover rounded-full text-sm font-medium transition-colors">
+                  Upgrade to Premium
+                </Link>
+              </div>
 
             {/* Reviews List */}
             <div className="space-y-4">
