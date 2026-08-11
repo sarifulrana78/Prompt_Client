@@ -228,8 +228,8 @@ function PromptsContent() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {prompts.map((prompt) => (
                 <PromptCard 
-                  key={prompt._id || prompt.id}
-                  id={prompt._id || prompt.id}
+                  key={prompt._id}
+                  id={prompt._id}
                   title={prompt.title}
                   category={prompt.category}
                   aiTool={prompt.aiTool}

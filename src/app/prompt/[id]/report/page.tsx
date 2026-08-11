@@ -1,20 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Flag, Send } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const API_BASE = '/api';
 
-export default function ReportPromptPage({ params }: { params: { id: string } }) {
+export default function ReportPromptPage() {
   const router = useRouter();
+  const params = useParams();
+  const promptId = params?.id as string;
   const [reason, setReason] = useState('Inappropriate Content');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!promptId) return;
     setLoading(true);
 
     try {
@@ -22,8 +25,9 @@ export default function ReportPromptPage({ params }: { params: { id: string } })
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ promptId: params.id, reason, description }),
+        body: JSON.stringify({ promptId, reason, description }),
       });
+
       const data = await res.json();
       if (data.success) {
         toast.success('Report submitted successfully');

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Star, Copy, Bookmark, Flag, ChevronLeft, Lock, Loader2, Send } from 'lucide-react';
+import { Star, Copy, Bookmark, Flag, ChevronLeft, Lock, Loader2, Send, X, Tag } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useSession } from '@/lib/auth-client';
 
@@ -28,6 +28,7 @@ type PromptContent = {
   aiTool: string;
   difficulty: string;
   visibility: string;
+  tags?: string[];
   copyCount?: number;
   bookmarkedBy?: string[];
   creator?: PromptCreator;
@@ -46,6 +47,15 @@ type ReviewItem = {
   };
 };
 
+const REPORT_REASONS = [
+  'Inappropriate Content',
+  'Spam',
+  'Copyright Violation',
+  'Misleading Information',
+  'Harassment',
+  'Other',
+];
+
 export default function PromptDetailsPage() {
   const params = useParams();
   const id = params?.id as string;
@@ -57,10 +67,16 @@ export default function PromptDetailsPage() {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   
-  // New review form
+  // Review form
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
+
+  // Report modal
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportDesc, setReportDesc] = useState('');
+  const [submittingReport, setSubmittingReport] = useState(false);
 
   const fetchReviews = useCallback(async () => {
     try {
@@ -126,7 +142,7 @@ export default function PromptDetailsPage() {
       const data = await res.json();
       if (data.success) {
         setIsBookmarked(data.isBookmarked);
-        toast.success(data.isBookmarked ? 'Prompt bookmarked' : 'Bookmark removed');
+        toast.success(data.isBookmarked ? 'Prompt bookmarked!' : 'Bookmark removed');
       }
     } catch (error) {
       console.error(error);
@@ -140,7 +156,7 @@ export default function PromptDetailsPage() {
       const res = await fetch(`${API_BASE}/prompts/${id}/fork`, { method: 'POST', credentials: 'include' });
       const data = await res.json();
       if (data.success) {
-        toast.success('Prompt forked to your account!');
+        toast.success('Prompt forked to your account! Check your prompts dashboard.');
       } else {
         toast.error(data.message || 'Failed to fork prompt');
       }
@@ -177,6 +193,37 @@ export default function PromptDetailsPage() {
     }
   };
 
+  const handleReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reportReason) {
+      toast.error('Please select a reason');
+      return;
+    }
+    setSubmittingReport(true);
+    try {
+      const res = await fetch(`${API_BASE}/prompts/${id}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reportReason, description: reportDesc }),
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Report submitted. Thank you for keeping the platform safe!');
+        setReportOpen(false);
+        setReportReason('');
+        setReportDesc('');
+      } else {
+        toast.error(data.message || 'Failed to submit report');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Error submitting report');
+    } finally {
+      setSubmittingReport(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-gray-400">
@@ -203,6 +250,60 @@ export default function PromptDetailsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Report Modal */}
+      {reportOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                <Flag className="w-5 h-5 text-red-400" /> Report Prompt
+              </h3>
+              <button onClick={() => setReportOpen(false)} className="p-1 text-gray-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleReport} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Select Reason *</label>
+                <div className="space-y-2">
+                  {REPORT_REASONS.map((reason) => (
+                    <label key={reason} className="flex items-center gap-3 cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="reason"
+                        value={reason}
+                        checked={reportReason === reason}
+                        onChange={() => setReportReason(reason)}
+                        className="accent-primary"
+                      />
+                      <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{reason}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Additional Details (Optional)</label>
+                <textarea
+                  value={reportDesc}
+                  onChange={(e) => setReportDesc(e.target.value)}
+                  placeholder="Provide any additional context..."
+                  rows={3}
+                  className="w-full bg-black/30 border border-border rounded-xl p-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-primary resize-none"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setReportOpen(false)} className="flex-1 py-2.5 rounded-xl border border-border text-gray-300 hover:bg-white/5 text-sm transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" disabled={submittingReport} className="flex-1 py-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 text-sm font-medium transition-colors disabled:opacity-50">
+                  {submittingReport ? 'Submitting...' : 'Submit Report'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <Link href="/prompts" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white mb-8 transition-colors">
         <ChevronLeft className="w-4 h-4" /> Back to Prompts
       </Link>
@@ -211,7 +312,7 @@ export default function PromptDetailsPage() {
         <div className="lg:col-span-2 space-y-8">
           {/* Main Info */}
           <div>
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center flex-wrap gap-3 mb-4">
               <span className="bg-primary/20 text-primary text-xs px-3 py-1 rounded-full font-medium border border-primary/20">
                 {prompt.category}
               </span>
@@ -221,12 +322,25 @@ export default function PromptDetailsPage() {
               <span className="bg-white/10 text-gray-300 text-xs px-3 py-1 rounded-full font-medium border border-white/10">
                 {prompt.difficulty}
               </span>
+              <span className={`text-xs px-3 py-1 rounded-full font-medium border ${prompt.visibility === 'Private' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 'bg-green-500/10 text-green-400 border-green-500/20'}`}>
+                {prompt.visibility}
+              </span>
             </div>
             
             <h1 className="text-3xl md:text-4xl font-bold mb-4">{prompt.title}</h1>
-            <p className="text-lg text-gray-300 leading-relaxed">
-              {prompt.description}
-            </p>
+            <p className="text-lg text-gray-300 leading-relaxed">{prompt.description}</p>
+
+            {/* Tags */}
+            {prompt.tags && prompt.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                <Tag className="w-4 h-4 text-gray-400 mt-0.5" />
+                {prompt.tags.map((tag, i) => (
+                  <Link key={i} href={`/prompts?search=${encodeURIComponent(tag)}`} className="text-xs text-gray-300 bg-white/5 border border-white/10 px-2 py-1 rounded hover:border-primary/30 hover:text-primary transition-colors">
+                    #{tag}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Prompt Content Box */}
@@ -244,7 +358,7 @@ export default function PromptDetailsPage() {
 
             {isLocked ? (
               <div className="relative rounded-lg overflow-hidden bg-black/40 border border-border/50">
-                <div className="p-4 blur-sm opacity-50 select-none font-mono text-sm text-gray-300">
+                <div className="p-4 blur-sm opacity-50 select-none font-mono text-sm text-gray-300 pointer-events-none">
                   {prompt.content}
                 </div>
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm z-10 p-6 text-center">
@@ -254,7 +368,7 @@ export default function PromptDetailsPage() {
                     Subscribe to Premium to unlock this prompt and copy it directly.
                   </p>
                   <Link href="/checkout" className="bg-primary hover:bg-primary-hover text-white px-6 py-2 rounded-full font-medium transition-colors">
-                    Upgrade to Premium
+                    Subscribe to Premium — $5
                   </Link>
                 </div>
               </div>
@@ -277,7 +391,7 @@ export default function PromptDetailsPage() {
                     <Star key={s} className="w-4 h-4 fill-current" />
                   ))}
                 </div>
-                <div className="text-xs text-gray-400">{reviews.length} Ratings</div>
+                <div className="text-xs text-gray-400">{reviews.length} Rating{reviews.length !== 1 ? 's' : ''}</div>
               </div>
               <div className="flex-1">
                 <p className="text-gray-300 text-sm">Community feedback on this AI prompt.</p>
@@ -285,7 +399,7 @@ export default function PromptDetailsPage() {
             </div>
 
             {/* Add Review Form */}
-          {session && !isLocked && (
+            {session && !isLocked && (
               <form onSubmit={handleAddReview} className="bg-card border border-border rounded-xl p-5 mb-8 space-y-4">
                 <h4 className="font-semibold text-sm">Leave a Review</h4>
                 <div className="flex items-center gap-2">
@@ -320,6 +434,7 @@ export default function PromptDetailsPage() {
                 </div>
               </form>
             )}
+
             {session && isLocked && (
               <div className="mb-8 rounded-xl border border-border bg-black/50 p-6 text-center text-gray-300">
                 <p className="font-medium mb-2">Premium Access Required</p>
@@ -327,6 +442,13 @@ export default function PromptDetailsPage() {
                 <Link href="/checkout" className="inline-flex items-center justify-center px-5 py-2 bg-primary hover:bg-primary-hover rounded-full text-sm font-medium transition-colors">
                   Upgrade to Premium
                 </Link>
+              </div>
+            )}
+
+            {!session && (
+              <div className="mb-8 rounded-xl border border-border bg-black/50 p-6 text-center">
+                <p className="text-gray-400 mb-3">Login to leave a review.</p>
+                <Link href="/login" className="text-primary hover:underline text-sm font-medium">Login &rarr;</Link>
               </div>
             )}
 
@@ -371,7 +493,7 @@ export default function PromptDetailsPage() {
           <div className="bg-card border border-border rounded-xl p-6">
             <h3 className="font-semibold mb-4 border-b border-border pb-4">Creator Info</h3>
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-full bg-linear-to-tr from-primary to-blue-500 p-0.5">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-blue-500 p-0.5">
                 <div className="relative w-full h-full rounded-full bg-card overflow-hidden flex items-center justify-center text-primary font-bold text-lg">
                   {prompt.creator?.photoURL || prompt.creator?.image ? (
                     <Image src={prompt.creator?.photoURL || prompt.creator?.image || ''} alt={prompt.creator?.name || 'Creator'} fill className="object-cover" />
@@ -399,33 +521,54 @@ export default function PromptDetailsPage() {
                 <span className="font-medium text-white">{prompt.visibility}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">Difficulty</span>
+                <span className="font-medium text-white">{prompt.difficulty}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-400">Created</span>
-                <span className="font-medium text-white">{new Date(prompt.createdAt).toLocaleDateString()}</span>
+                <span className="font-medium text-white">{prompt.createdAt ? new Date(prompt.createdAt).toLocaleDateString() : 'N/A'}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">Reviews</span>
+                <span className="font-medium text-white">{reviews.length}</span>
               </div>
             </div>
           </div>
 
           <div className="flex flex-col gap-3">
-            <button 
-              onClick={toggleBookmark}
-              className={`flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-colors ${
-                isBookmarked 
-                  ? 'bg-primary/20 text-primary border border-primary/30' 
-                  : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'
-              }`}
-            >
-              <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} /> 
-              {isBookmarked ? 'Saved to Bookmarks' : 'Bookmark Prompt'}
-            </button>
-            <button 
-              onClick={handleFork}
-              className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-colors bg-white/5 hover:bg-white/10 border border-white/10 text-white"
-            >
-              Fork Prompt
-            </button>
-            <Link href={`/prompt/${id}/report`} className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-colors bg-red-500/10 hover:bg-red-500/15 border border-red-500/20 text-red-300">
-              <Flag className="w-4 h-4" /> Report Prompt
-            </Link>
+            {session ? (
+              <>
+                <button 
+                  onClick={toggleBookmark}
+                  className={`flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-colors ${
+                    isBookmarked 
+                      ? 'bg-primary/20 text-primary border border-primary/30' 
+                      : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'
+                  }`}
+                >
+                  <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} /> 
+                  {isBookmarked ? 'Saved to Bookmarks' : 'Bookmark Prompt'}
+                </button>
+                {!isLocked && (
+                  <button 
+                    onClick={handleFork}
+                    className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-colors bg-white/5 hover:bg-white/10 border border-white/10 text-white"
+                  >
+                    Fork Prompt
+                  </button>
+                )}
+                <button 
+                  onClick={() => setReportOpen(true)}
+                  className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-colors bg-red-500/10 hover:bg-red-500/15 border border-red-500/20 text-red-300"
+                >
+                  <Flag className="w-4 h-4" /> Report Prompt
+                </button>
+              </>
+            ) : (
+              <Link href="/login" className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium bg-primary hover:bg-primary-hover text-white transition-colors">
+                Login to Interact
+              </Link>
+            )}
           </div>
         </div>
       </div>

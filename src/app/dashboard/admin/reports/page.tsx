@@ -89,7 +89,7 @@ export default function AdminReportsPage() {
                     <span>Prompt: <strong className="text-white">{report.prompt?.title || 'Unknown'}</strong></span>
                   </div>
                   <p className="text-sm text-gray-300 mb-2">{report.description || 'No additional description provided.'}</p>
-                  <p className="text-xs text-gray-500">Reported by {report.user?.name || report.user?.email || 'Unknown'} on {new Date(report.createdAt).toLocaleDateString()}</p>
+                  <p className="text-xs text-gray-500">Reported by {report.user?.name || report.user?.email || 'Unknown'} on {report.createdAt ? new Date(report.createdAt).toLocaleDateString() : 'N/A'}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button

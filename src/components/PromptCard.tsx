@@ -5,15 +5,21 @@ import { Star } from 'lucide-react';
 interface PromptCardProps {
   id: string;
   title: string;
-  category: string;
-  aiTool: string;
-  copyCount: number;
-  creatorName: string;
+  category?: string;
+  aiTool?: string;
+  copyCount?: number;
+  creatorName?: string;
   creatorPhoto?: string;
 }
 
 export default function PromptCard({ 
-  id, title, category, aiTool, copyCount, creatorName, creatorPhoto 
+  id,
+  title,
+  category = 'General',
+  aiTool = 'ChatGPT',
+  copyCount = 0,
+  creatorName = 'Anonymous',
+  creatorPhoto 
 }: PromptCardProps) {
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden card-hover flex flex-col h-full">

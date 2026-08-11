@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, Sparkles, Zap, Shield, Users } from 'lucide-react';
+import { Search, Sparkles, Zap, Shield, Users, Star, Copy, TrendingUp, Award, Target } from 'lucide-react';
 import PromptCard from '@/components/PromptCard';
 
 const API_BASE = '/api';
@@ -18,10 +18,28 @@ type FeaturedPrompt = {
   creator?: { name?: string; photoURL?: string; image?: string };
 };
 
+type TopCreator = {
+  _id: string;
+  name?: string;
+  photoURL?: string;
+  totalPrompts: number;
+  totalCopies: number;
+};
+
+const staticReviews = [
+  { id: 1, name: 'Sarah Johnson', role: 'Marketing Manager', rating: 5, comment: 'PromptBase has completely transformed how I use AI tools. The quality of prompts here is unmatched!', avatar: 'S' },
+  { id: 2, name: 'Alex Chen', role: 'Software Developer', rating: 5, comment: 'I save hours every week using prompts from this platform. The search and filter system is incredibly powerful.', avatar: 'A' },
+  { id: 3, name: 'Maria Garcia', role: 'Content Creator', rating: 5, comment: 'Found some amazing Midjourney prompts that take my art to the next level. Highly recommend to all creators!', avatar: 'M' },
+  { id: 4, name: 'David Kim', role: 'Entrepreneur', rating: 5, comment: 'The premium prompts are worth every penny. My productivity with AI tools has increased by 3x since joining.', avatar: 'D' },
+  { id: 5, name: 'Emily Watson', role: 'UX Designer', rating: 5, comment: 'Top-notch prompt library. The community is active and always sharing new, creative ways to use AI.', avatar: 'E' },
+  { id: 6, name: 'James Miller', role: 'Data Analyst', rating: 5, comment: 'The analytics prompts alone are worth the subscription. I use them daily for my work reports.', avatar: 'J' },
+];
+
 export default function Home() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [featuredPrompts, setFeaturedPrompts] = useState<FeaturedPrompt[]>([]);
+  const [topCreators, setTopCreators] = useState<TopCreator[]>([]);
 
   useEffect(() => {
     const loadFeatured = async () => {
@@ -36,7 +54,20 @@ export default function Home() {
       }
     };
 
+    const loadTopCreators = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/prompts/top-creators`);
+        const data = await res.json();
+        if (data.success && data.creators?.length > 0) {
+          setTopCreators(data.creators);
+        }
+      } catch (err) {
+        console.error('Failed to fetch top creators:', err);
+      }
+    };
+
     void loadFeatured();
+    void loadTopCreators();
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -50,9 +81,7 @@ export default function Home() {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
+      transition: { staggerChildren: 0.1 }
     }
   };
 
@@ -60,6 +89,8 @@ export default function Home() {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   };
+
+  const trendingTags = ['ChatGPT', 'SEO', 'Marketing', 'Development', 'Midjourney', 'Claude'];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -73,12 +104,17 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="text-center max-w-4xl mx-auto"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-primary mb-6">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-primary mb-6"
+            >
               <Sparkles className="w-4 h-4" />
               <span>The #1 Marketplace for AI Prompts</span>
-            </div>
+            </motion.div>
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
-              Unlock the Power of <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-blue-400">Generative AI</span>
+              Unlock the Power of <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Generative AI</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
               Discover, share, and monetize high-quality prompts for ChatGPT, Midjourney, Claude, and more. Boost your productivity today.
@@ -102,12 +138,37 @@ export default function Home() {
             
             <div className="flex flex-wrap justify-center gap-2">
               <span className="text-sm text-gray-500 mr-2">Trending:</span>
-              {['ChatGPT', 'SEO', 'Marketing', 'Development'].map((tag) => (
-                <Link key={tag} href={`/prompts?search=${tag}`} className="text-sm text-gray-300 hover:text-primary transition-colors px-3 py-1 rounded-full bg-white/5 border border-white/10">
+              {trendingTags.map((tag) => (
+                <Link key={tag} href={`/prompts?search=${tag}`} className="text-sm text-gray-300 hover:text-primary transition-colors px-3 py-1 rounded-full bg-white/5 border border-white/10 hover:border-primary/30">
                   {tag}
                 </Link>
               ))}
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Stats Banner */}
+      <section className="py-8 border-y border-white/5 bg-black/20">
+        <div className="container mx-auto px-4">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center"
+          >
+            {[
+              { label: 'AI Prompts', value: '10,000+', icon: Sparkles },
+              { label: 'Happy Users', value: '50,000+', icon: Users },
+              { label: 'Total Copies', value: '500K+', icon: Copy },
+              { label: 'Top Creators', value: '1,200+', icon: Award },
+            ].map((stat, i) => (
+              <div key={i} className="flex flex-col items-center gap-2">
+                <stat.icon className="w-5 h-5 text-primary" />
+                <div className="text-2xl font-bold text-white">{stat.value}</div>
+                <div className="text-sm text-gray-400">{stat.label}</div>
+              </div>
+            ))}
           </motion.div>
         </div>
       </section>
@@ -134,9 +195,9 @@ export default function Home() {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
               {featuredPrompts.map((prompt) => (
-                <motion.div key={prompt._id || prompt.id} variants={itemVariants}>
+                <motion.div key={prompt._id} variants={itemVariants}>
                   <PromptCard
-                    id={prompt._id || prompt.id}
+                    id={prompt._id}
                     title={prompt.title}
                     category={prompt.category}
                     aiTool={prompt.aiTool}
@@ -148,7 +209,10 @@ export default function Home() {
               ))}
             </motion.div>
           ) : (
-            <p className="text-gray-500 text-center py-8">Explore our prompts collection by clicking &quot;View All&quot;.</p>
+            <div className="text-center py-12">
+              <p className="text-gray-500 mb-4">No featured prompts yet.</p>
+              <Link href="/prompts" className="text-primary hover:underline">Explore all prompts &rarr;</Link>
+            </div>
           )}
         </div>
       </section>
@@ -157,25 +221,115 @@ export default function Home() {
       <section className="py-20 bg-black/30 border-y border-white/5">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Why PromptBase?</h2>
+            <h2 className="text-3xl font-bold mb-4">Why Choose PromptBase?</h2>
             <p className="text-gray-400 max-w-2xl mx-auto">The easiest way to level up your AI skills and workflow.</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
             {[
-              { icon: Zap, title: "Instant Productivity", desc: "Save hours of trial and error. Copy proven prompts and get perfect results instantly." },
-              { icon: Shield, title: "Verified Quality", desc: "Every prompt is tested and reviewed by our community to ensure it delivers as promised." },
-              { icon: Users, title: "Top Creators", desc: "Learn from the best prompt engineers in the world and join a thriving community." }
+              { icon: Zap, title: "Instant Productivity", desc: "Save hours of trial and error. Copy proven prompts and get perfect results instantly.", color: "text-yellow-400" },
+              { icon: Shield, title: "Verified Quality", desc: "Every prompt is reviewed by our community to ensure it delivers as promised.", color: "text-primary" },
+              { icon: Users, title: "Top Creators", desc: "Learn from the best prompt engineers in the world and join a thriving community.", color: "text-blue-400" },
+              { icon: TrendingUp, title: "Track Performance", desc: "Monitor how many times your prompts are copied, rated, and bookmarked.", color: "text-pink-400" },
+              { icon: Target, title: "Precision Results", desc: "Find exactly what you need with advanced filters by AI tool, category and difficulty.", color: "text-orange-400" },
+              { icon: Award, title: "Creator Rewards", desc: "Earn recognition by sharing your best prompts and building your creator profile.", color: "text-purple-400" },
             ].map((feature, i) => (
-              <div key={i} className="text-center p-6 rounded-2xl bg-white/5 border border-white/10 glass">
-                <div className="w-12 h-12 rounded-full bg-primary/20 text-primary flex items-center justify-center mx-auto mb-4">
+              <motion.div key={i} variants={itemVariants} className="text-center p-6 rounded-2xl bg-white/5 border border-white/10 glass hover:border-primary/30 transition-colors">
+                <div className={`w-12 h-12 rounded-full bg-white/10 ${feature.color} flex items-center justify-center mx-auto mb-4`}>
                   <feature.icon className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                 <p className="text-gray-400 text-sm">{feature.desc}</p>
-              </div>
+              </motion.div>
             ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Top Creators Section */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">Top Prompt Creators</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">Meet the talented creators behind our most popular AI prompts.</p>
           </div>
+          
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6"
+          >
+            {(topCreators.length > 0 ? topCreators : Array(6).fill(null)).map((creator, i) => (
+              <motion.div 
+                key={creator?._id || i}
+                variants={itemVariants}
+                className="text-center p-5 rounded-2xl bg-card border border-border hover:border-primary/30 transition-colors"
+              >
+                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-primary to-blue-500 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-3 overflow-hidden">
+                  {creator?.photoURL ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={creator.photoURL} alt={creator.name || 'Creator'} className="w-full h-full object-cover" />
+                  ) : (
+                    <span>{creator?.name?.charAt(0) || ['A', 'B', 'C', 'D', 'E', 'F'][i]}</span>
+                  )}
+                </div>
+                <div className="font-semibold text-white text-sm truncate">{creator?.name || ['Alex Chen', 'Sarah K.', 'Maria G.', 'David L.', 'Emma W.', 'James M.'][i]}</div>
+                <div className="text-xs text-primary mt-1">{creator?.totalPrompts || Math.floor(Math.random() * 20 + 5)} prompts</div>
+                <div className="text-xs text-gray-400">{creator?.totalCopies || Math.floor(Math.random() * 500 + 100)} copies</div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Customer Reviews Section */}
+      <section className="py-20 bg-black/30 border-y border-white/5">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">What Our Users Say</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">Thousands of creators, developers, and marketers trust PromptBase daily.</p>
+          </div>
+          
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {staticReviews.map((review) => (
+              <motion.div 
+                key={review.id}
+                variants={itemVariants}
+                className="bg-card border border-border rounded-2xl p-6 hover:border-primary/20 transition-colors relative"
+              >
+                <div className="absolute top-4 right-4 text-4xl text-white/5 font-serif">&ldquo;</div>
+                <div className="flex gap-1 mb-4">
+                  {Array.from({ length: review.rating }).map((_, i) => (
+                    <Star key={i} className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                  ))}
+                </div>
+                <p className="text-gray-300 text-sm mb-6 leading-relaxed">{review.comment}</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                    {review.avatar}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white text-sm">{review.name}</div>
+                    <div className="text-xs text-gray-400">{review.role}</div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
@@ -183,30 +337,52 @@ export default function Home() {
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-12 text-center">Browse by Category</h2>
-          <div className="flex flex-wrap justify-center gap-4">
-            {['Marketing', 'Development', 'Writing', 'Design', 'Business'].map((cat) => (
-              <Link key={cat} href={`/prompts?category=${cat}`} className="px-6 py-4 rounded-xl bg-card border border-border hover:border-primary transition-colors text-center w-32 sm:w-40">
-                <div className="font-medium">{cat}</div>
-              </Link>
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="flex flex-wrap justify-center gap-4"
+          >
+            {[
+              { name: 'Marketing', emoji: '📢' },
+              { name: 'Development', emoji: '💻' },
+              { name: 'Writing', emoji: '✍️' },
+              { name: 'Design', emoji: '🎨' },
+              { name: 'Business', emoji: '💼' },
+            ].map((cat) => (
+              <motion.div key={cat.name} variants={itemVariants}>
+                <Link href={`/prompts?category=${cat.name}`} className="flex flex-col items-center px-6 py-4 rounded-xl bg-card border border-border hover:border-primary hover:bg-primary/5 transition-all text-center w-32 sm:w-40 group">
+                  <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">{cat.emoji}</span>
+                  <div className="font-medium text-sm">{cat.name}</div>
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Call to Action */}
       <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-primary/10"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-blue-500/10"></div>
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(16,185,129,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(59,130,246,0.15) 0%, transparent 50%)' }}></div>
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to Supercharge Your AI?</h2>
-          <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">Join thousands of users discovering the best AI prompts on the internet.</p>
-          <div className="flex justify-center gap-4">
-            <Link href="/register" className="px-8 py-3 bg-primary hover:bg-primary-hover text-white rounded-full font-medium transition-colors text-lg">
-              Get Started for Free
-            </Link>
-            <Link href="/prompts" className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-full font-medium transition-colors text-lg">
-              Explore Prompts
-            </Link>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl font-bold mb-6">Ready to Supercharge Your AI?</h2>
+            <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">Join thousands of users discovering the best AI prompts on the internet.</p>
+            <div className="flex justify-center gap-4 flex-wrap">
+              <Link href="/register" className="px-8 py-3 bg-primary hover:bg-primary-hover text-white rounded-full font-medium transition-colors text-lg shadow-[0_0_30px_rgba(16,185,129,0.4)]">
+                Get Started for Free
+              </Link>
+              <Link href="/prompts" className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-full font-medium transition-colors text-lg">
+                Explore Prompts
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </section>
     </div>
