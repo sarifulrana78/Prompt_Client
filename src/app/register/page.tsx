@@ -42,13 +42,16 @@ export default function RegisterPage() {
   const handleGoogleLogin = async () => {
     try {
       const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-      await signIn.social({
+      const res = await signIn.social({
         provider: 'google',
         callbackURL: `${origin}/dashboard`
       });
+      if (res?.error) {
+        toast.error(res.error.message || 'Google signup failed');
+      }
     } catch (error) {
       console.error(error);
-      toast.error('Google signup failed');
+      toast.error('Google signup failed. Please verify server is running on port 5000.');
     }
   };
 
