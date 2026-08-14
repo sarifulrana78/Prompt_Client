@@ -10,8 +10,12 @@ const API_BASE = '/api';
 type SavedPrompt = {
   _id: string;
   title: string;
+  description?: string;
   category?: string;
   aiTool?: string;
+  difficulty?: string;
+  visibility?: string;
+  thumbnail?: string;
   copyCount?: number;
   creator?: { name?: string; photoURL?: string; image?: string };
 };
@@ -63,8 +67,12 @@ export default function SavedPromptsPage() {
               key={prompt._id}
               id={prompt._id}
               title={prompt.title}
+              description={prompt.description}
               category={prompt.category}
               aiTool={prompt.aiTool}
+              difficulty={prompt.difficulty}
+              visibility={prompt.visibility}
+              thumbnail={prompt.thumbnail}
               copyCount={prompt.copyCount || 0}
               creatorName={prompt.creator?.name || 'Anonymous'}
               creatorPhoto={prompt.creator?.photoURL || prompt.creator?.image}

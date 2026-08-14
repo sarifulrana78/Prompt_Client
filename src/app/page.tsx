@@ -12,8 +12,12 @@ const API_BASE = '/api';
 type FeaturedPrompt = {
   _id: string;
   title: string;
+  description?: string;
   category?: string;
   aiTool?: string;
+  difficulty?: string;
+  visibility?: string;
+  thumbnail?: string;
   copyCount?: number;
   creator?: { name?: string; photoURL?: string; image?: string };
 };
@@ -136,13 +140,22 @@ export default function Home() {
               </button>
             </form>
             
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex flex-wrap justify-center gap-2 mb-10">
               <span className="text-sm text-gray-500 mr-2">Trending:</span>
               {trendingTags.map((tag) => (
                 <Link key={tag} href={`/prompts?search=${tag}`} className="text-sm text-gray-300 hover:text-primary transition-colors px-3 py-1 rounded-full bg-white/5 border border-white/10 hover:border-primary/30">
                   {tag}
                 </Link>
               ))}
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/prompts" className="w-full sm:w-auto px-8 py-3 bg-primary hover:bg-primary-hover text-white rounded-full font-medium transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/25">
+                Explore All Prompts <span aria-hidden="true">&rarr;</span>
+              </Link>
+              <Link href="/register" className="w-full sm:w-auto px-8 py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full font-medium transition-colors flex items-center justify-center">
+                Become a Creator
+              </Link>
             </div>
           </motion.div>
         </div>
@@ -199,8 +212,12 @@ export default function Home() {
                   <PromptCard
                     id={prompt._id}
                     title={prompt.title}
+                    description={prompt.description}
                     category={prompt.category}
                     aiTool={prompt.aiTool}
+                    difficulty={prompt.difficulty}
+                    visibility={prompt.visibility}
+                    thumbnail={prompt.thumbnail}
                     copyCount={prompt.copyCount || 0}
                     creatorName={prompt.creator?.name || 'Anonymous'}
                     creatorPhoto={prompt.creator?.photoURL || prompt.creator?.image}
@@ -214,6 +231,62 @@ export default function Home() {
               <Link href="/prompts" className="text-primary hover:underline">Explore all prompts &rarr;</Link>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Engine Compatibility Section */}
+      <section className="py-20 bg-background border-t border-white/5">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h4 className="text-sm font-bold tracking-widest text-[#7c3aed] uppercase mb-3">Multi-Platform</h4>
+            <h2 className="text-4xl font-bold text-white mb-4">Engine Compatibility</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">Prompts on PromptBase are tailored for individual models to exploit distinct strengths.</p>
+          </div>
+          
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto"
+          >
+            {[
+              {
+                tool: 'ChatGPT',
+                model: 'GPT-4o / GPT-4',
+                desc: 'Complex reasoning, detailed programming architectures, logic refinement.',
+                color: 'text-[#10b981]'
+              },
+              {
+                tool: 'Gemini',
+                model: 'Gemini 1.5 Pro',
+                desc: 'Ultra-long context windows, deep code analysis, Google Workspace syncing.',
+                color: 'text-[#0ea5e9]'
+              },
+              {
+                tool: 'Claude',
+                model: 'Claude 3.5 Sonnet',
+                desc: 'Premium programmatic output, highly natural copywriting, markdown structuring.',
+                color: 'text-[#f97316]'
+              },
+              {
+                tool: 'Midjourney',
+                model: 'Midjourney v6',
+                desc: 'Highly artistic rendering, aspect-ratio configuration, photo-realism parameters.',
+                color: 'text-[#a855f7]'
+              }
+            ].map((engine, i) => (
+              <motion.div 
+                key={engine.tool} 
+                variants={itemVariants} 
+                className="p-6 rounded-2xl bg-[#0f111a] border border-white/5 hover:border-white/10 transition-colors card-hover flex flex-col h-full"
+              >
+                <h3 className={`font-bold text-lg mb-4 ${engine.color}`}>{engine.tool}</h3>
+                <h4 className="text-white font-semibold text-sm mb-3">{engine.model}</h4>
+                <p className="text-gray-400 text-sm leading-relaxed">{engine.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
@@ -256,8 +329,9 @@ export default function Home() {
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Top Prompt Creators</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Meet the talented creators behind our most popular AI prompts.</p>
+            <h4 className="text-sm font-bold tracking-widest text-[#7c3aed] uppercase mb-3">Showcase</h4>
+            <h2 className="text-4xl font-bold text-white mb-4">Top Prompt Creators</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">Engage with community leaders pioneering advanced prompt structures.</p>
           </div>
           
           <motion.div 
@@ -265,25 +339,56 @@ export default function Home() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto"
           >
-            {(topCreators.length > 0 ? topCreators : Array(6).fill(null)).map((creator, i) => (
+            {(topCreators.length > 0 ? topCreators : Array(3).fill(null)).map((creator, i) => (
               <motion.div 
                 key={creator?._id || i}
                 variants={itemVariants}
-                className="text-center p-5 rounded-2xl bg-card border border-border hover:border-primary/30 transition-colors"
+                className="p-6 rounded-2xl bg-[#0f111a] border border-white/5 hover:border-purple-500/30 transition-all card-hover"
               >
-                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-primary to-blue-500 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-3 overflow-hidden">
-                  {creator?.photoURL ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={creator.photoURL} alt={creator.name || 'Creator'} className="w-full h-full object-cover" />
-                  ) : (
-                    <span>{creator?.name?.charAt(0) || ['A', 'B', 'C', 'D', 'E', 'F'][i]}</span>
-                  )}
+                <div className="flex flex-col items-center text-center">
+                  <div className="relative mb-4">
+                    <div className="w-20 h-20 rounded-full p-[2px] bg-gradient-to-b from-purple-500 to-transparent">
+                      <div className="w-full h-full rounded-full bg-black overflow-hidden flex items-center justify-center text-white text-2xl font-bold">
+                        {creator?.photoURL ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={creator.photoURL} alt={creator.name || 'Creator'} className="w-full h-full object-cover" />
+                        ) : (
+                          <span>{creator?.name?.charAt(0) || ['P', 'C', 'G'][i]}</span>
+                        )}
+                      </div>
+                    </div>
+                    {/* Badge Icon */}
+                    <div className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-purple-600 border-2 border-[#0f111a] flex items-center justify-center">
+                      <Award className="w-3 h-3 text-white" />
+                    </div>
+                  </div>
+                  
+                  <h3 className="font-bold text-lg text-white mb-1">
+                    {creator?.name || ['PromptMaster', 'CreativeAI', 'GeminiWiz'][i]}
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-6">
+                    {(creator as { role?: string })?.role || ['Senior Engineer', 'Art Director', 'Writer & Marketer'][i]}
+                  </p>
+                  
+                  <div className="w-full h-[1px] bg-white/5 mb-6"></div>
+                  
+                  <div className="flex w-full justify-around text-center">
+                    <div>
+                      <div className="text-xl font-bold text-white mb-1">
+                        {creator?.totalPrompts || (i * 7 + 28)}
+                      </div>
+                      <div className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Prompts</div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold text-white mb-1">
+                        {creator?.totalCopies || (i * 130 + 850)}
+                      </div>
+                      <div className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Copies</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="font-semibold text-white text-sm truncate">{creator?.name || ['Alex Chen', 'Sarah K.', 'Maria G.', 'David L.', 'Emma W.', 'James M.'][i]}</div>
-                <div className="text-xs text-primary mt-1">{creator?.totalPrompts || Math.floor(Math.random() * 20 + 5)} prompts</div>
-                <div className="text-xs text-gray-400">{creator?.totalCopies || Math.floor(Math.random() * 500 + 100)} copies</div>
               </motion.div>
             ))}
           </motion.div>

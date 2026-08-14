@@ -20,6 +20,7 @@ export default function Footer() {
               <li><Link href="/prompts" className="hover:text-primary transition-colors">Browse Prompts</Link></li>
               <li><Link href="/dashboard" className="hover:text-primary transition-colors">Dashboard</Link></li>
               <li><Link href="/pricing" className="hover:text-primary transition-colors">Premium</Link></li>
+              <li><Link href="/demo" className="hover:text-primary transition-colors flex items-center gap-2">Demo Accounts <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary">NEW</span></Link></li>
             </ul>
           </div>
           

@@ -20,14 +20,18 @@ const API_BASE = '/api';
 export default function AdminPromptsPage() {
   const [prompts, setPrompts] = useState<AdminPrompt[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const loadPrompts = async () => {
+      setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/admin/prompts`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE}/admin/prompts?page=${page}&limit=10`, { credentials: 'include' });
         const data = await res.json();
         if (data.success) {
           setPrompts(data.prompts || []);
+          setTotalPages(data.totalPages || 1);
         } else {
           toast.error(data.message || 'Failed to load prompts');
         }
@@ -40,7 +44,7 @@ export default function AdminPromptsPage() {
     };
 
     void loadPrompts();
-  }, []);
+  }, [page]);
 
   const updateStatus = async (id: string, status: string) => {
     try {
@@ -60,6 +64,13 @@ export default function AdminPromptsPage() {
     } catch (err) {
       console.error(err);
       toast.error('Error updating prompt status');
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -113,6 +124,42 @@ export default function AdminPromptsPage() {
               </div>
             </div>
           ))}
+          
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-12">
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
+                  className="w-10 h-10 rounded-lg border border-border flex items-center justify-center hover:bg-white/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-white"
+                >
+                  &larr;
+                </button>
+                
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                      page === pageNum
+                        ? 'bg-primary text-white shadow-lg'
+                        : 'border border-border text-gray-300 hover:bg-white/5'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+
+                <button 
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages}
+                  className="w-10 h-10 rounded-lg border border-border flex items-center justify-center hover:bg-white/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-white"
+                >
+                  &rarr;
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

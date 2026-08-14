@@ -10,10 +10,13 @@ const API_BASE = '/api';
 type PromptListItem = {
   _id: string;
   title: string;
+  description?: string;
   category?: string;
   aiTool?: string;
+  difficulty?: string;
+  visibility?: string;
+  thumbnail?: string;
   copyCount?: number;
-  description?: string;
   creator?: { name?: string; photoURL?: string; image?: string };
 };
 
@@ -75,33 +78,36 @@ function PromptsContent() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Explore Prompts</h1>
-          <p className="text-gray-400">Find the perfect prompt for your next project</p>
-        </div>
-        
-        <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input 
-              type="text"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Search prompts..." 
-              className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-primary transition-colors"
-            />
+      <div className="mb-8">
+        <h4 className="text-[#a78bfa] text-xs font-bold tracking-widest uppercase mb-3">Catalog</h4>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2 text-white">Explore Prompts</h1>
+            <p className="text-gray-400 text-sm">Showing {prompts.length > 0 ? '9' : '0'} verified AI prompts</p>
           </div>
-          <button 
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm hover:bg-white/10 transition-colors md:hidden"
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-            Filters
-          </button>
+          
+          <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3">
+            <div className="relative w-full sm:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input 
+                type="text"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search prompt, tag, tool..." 
+                className="w-full bg-[#151923] border border-white/5 rounded-xl py-2.5 pl-10 pr-4 text-sm text-gray-300 focus:outline-none focus:border-white/20 transition-colors shadow-inner"
+              />
+            </div>
+            <button 
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm hover:bg-white/10 transition-colors md:hidden text-gray-300"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              Filters
+            </button>
+          </div>
         </div>
       </div>
 
@@ -130,73 +136,62 @@ function PromptsContent() {
             </div>
 
             <div className="space-y-6">
-              {/* Sort By */}
-              <div>
-                <h4 className="text-sm font-medium text-gray-400 mb-3">Sort By</h4>
-                <select 
-                  value={sortBy}
-                  onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
-                  className="w-full bg-black/30 border border-border rounded-lg p-2 text-sm text-white focus:outline-none focus:border-primary"
-                >
-                  <option value="latest">Latest</option>
-                  <option value="popular">Most Popular</option>
-                  <option value="copies">Most Copied</option>
-                </select>
-              </div>
-
               {/* AI Tool */}
               <div>
-                <h4 className="text-sm font-medium text-gray-400 mb-3">AI Tool</h4>
-                <div className="space-y-2">
-                  {['All', 'ChatGPT', 'Midjourney', 'Claude', 'Gemini'].map((tool) => (
-                    <label key={tool} className="flex items-center gap-2 text-sm cursor-pointer hover:text-white text-gray-300">
-                      <input 
-                        type="radio" 
-                        name="aiTool"
-                        checked={aiTool === (tool === 'All' ? '' : tool)}
-                        onChange={() => { setAiTool(tool === 'All' ? '' : tool); setPage(1); }}
-                        className="accent-primary"
-                      />
+                <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3">AI Engine</h4>
+                <div className="space-y-1">
+                  {['All', 'ChatGPT', 'Gemini', 'Claude', 'Midjourney', 'Stable Diffusion', 'Other'].map((tool) => (
+                    <button
+                      key={tool}
+                      onClick={() => { setAiTool(tool === 'All' ? '' : tool); setPage(1); }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        aiTool === (tool === 'All' ? '' : tool)
+                          ? 'bg-[#2a1b4d] text-purple-300 border border-purple-500/30'
+                          : 'text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent'
+                      }`}
+                    >
                       {tool}
-                    </label>
+                    </button>
                   ))}
                 </div>
               </div>
 
               {/* Category */}
               <div>
-                <h4 className="text-sm font-medium text-gray-400 mb-3">Category</h4>
-                <div className="space-y-2">
+                <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3 mt-6">Category</h4>
+                <div className="space-y-1">
                   {['All', 'Marketing', 'Development', 'Writing', 'Design', 'Business'].map((cat) => (
-                    <label key={cat} className="flex items-center gap-2 text-sm cursor-pointer hover:text-white text-gray-300">
-                      <input 
-                        type="radio" 
-                        name="category"
-                        checked={category === (cat === 'All' ? '' : cat)}
-                        onChange={() => { setCategory(cat === 'All' ? '' : cat); setPage(1); }}
-                        className="accent-primary"
-                      />
+                    <button
+                      key={cat}
+                      onClick={() => { setCategory(cat === 'All' ? '' : cat); setPage(1); }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        category === (cat === 'All' ? '' : cat)
+                          ? 'bg-[#2a1b4d] text-purple-300 border border-purple-500/30'
+                          : 'text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent'
+                      }`}
+                    >
                       {cat}
-                    </label>
+                    </button>
                   ))}
                 </div>
               </div>
 
               {/* Difficulty */}
               <div>
-                <h4 className="text-sm font-medium text-gray-400 mb-3">Difficulty</h4>
-                <div className="space-y-2">
+                <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3 mt-6">Difficulty</h4>
+                <div className="space-y-1">
                   {['All', 'Beginner', 'Intermediate', 'Pro'].map((level) => (
-                    <label key={level} className="flex items-center gap-2 text-sm cursor-pointer hover:text-white text-gray-300">
-                      <input 
-                        type="radio" 
-                        name="difficulty"
-                        checked={difficulty === (level === 'All' ? '' : level)}
-                        onChange={() => { setDifficulty(level === 'All' ? '' : level); setPage(1); }}
-                        className="accent-primary"
-                      />
+                    <button
+                      key={level}
+                      onClick={() => { setDifficulty(level === 'All' ? '' : level); setPage(1); }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        difficulty === (level === 'All' ? '' : level)
+                          ? 'bg-[#2a1b4d] text-purple-300 border border-purple-500/30'
+                          : 'text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent'
+                      }`}
+                    >
                       {level}
-                    </label>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -206,6 +201,29 @@ function PromptsContent() {
 
         {/* Prompts Grid */}
         <main className="flex-1">
+          {/* Top Sort Bar */}
+          <div className="bg-card border border-white/5 rounded-xl p-3 mb-6 flex items-center gap-4">
+            <span className="text-sm text-gray-400 ml-2">Sort By:</span>
+            <div className="flex items-center gap-1">
+              {[
+                { label: 'Latest', value: 'latest' },
+                { label: 'Most Popular', value: 'popular' },
+                { label: 'Most Copied', value: 'copies' }
+              ].map((sortOption) => (
+                <button
+                  key={sortOption.value}
+                  onClick={() => { setSortBy(sortOption.value); setPage(1); }}
+                  className={`px-4 py-1.5 rounded-lg text-sm transition-colors ${
+                    sortBy === sortOption.value
+                      ? 'bg-[#1e2330] text-white font-medium'
+                      : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                  }`}
+                >
+                  {sortOption.label}
+                </button>
+              ))}
+            </div>
+          </div>
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 text-gray-400">
               <Loader2 className="w-8 h-8 animate-spin text-primary mb-2" />
@@ -231,8 +249,12 @@ function PromptsContent() {
                   key={prompt._id}
                   id={prompt._id}
                   title={prompt.title}
+                  description={prompt.description}
                   category={prompt.category}
                   aiTool={prompt.aiTool}
+                  difficulty={prompt.difficulty}
+                  visibility={prompt.visibility}
+                  thumbnail={prompt.thumbnail}
                   copyCount={prompt.copyCount || 0}
                   creatorName={prompt.creator?.name || 'Anonymous'}
                   creatorPhoto={prompt.creator?.photoURL || prompt.creator?.image}
