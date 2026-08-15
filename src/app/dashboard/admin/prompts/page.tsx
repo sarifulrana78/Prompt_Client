@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { List, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { List, CheckCircle2, XCircle, Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
 type AdminPrompt = {
   _id: string;
@@ -67,6 +68,39 @@ export default function AdminPromptsPage() {
     }
   };
 
+  const deletePrompt = async (id: string) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#3b82f6',
+      confirmButtonText: 'Yes, delete it!',
+      background: '#11131e',
+      color: '#fff'
+    });
+
+    if (!result.isConfirmed) return;
+    
+    try {
+      const res = await fetch(`${API_BASE}/admin/prompts/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Prompt deleted successfully');
+        setPrompts(prompts.filter(p => p._id !== id));
+      } else {
+        toast.error(data.message || 'Failed to delete prompt');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error deleting prompt');
+    }
+  };
+
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
@@ -116,9 +150,15 @@ export default function AdminPromptsPage() {
                   </button>
                   <button
                     onClick={() => updateStatus(prompt._id, 'rejected')}
-                    className="inline-flex items-center gap-2 rounded-full bg-red-500/15 text-red-400 border border-red-500/20 px-4 py-2 text-sm transition-colors hover:bg-red-500/20"
+                    className="inline-flex items-center gap-2 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/20 px-4 py-2 text-sm transition-colors hover:bg-orange-500/20"
                   >
                     <XCircle className="w-4 h-4" /> Reject
+                  </button>
+                  <button
+                    onClick={() => deletePrompt(prompt._id)}
+                    className="inline-flex items-center gap-2 rounded-full bg-red-500/15 text-red-400 border border-red-500/20 px-4 py-2 text-sm transition-colors hover:bg-red-500/20"
+                  >
+                    <Trash2 className="w-4 h-4" /> Delete
                   </button>
                 </div>
               </div>
