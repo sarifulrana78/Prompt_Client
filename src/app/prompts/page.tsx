@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Search, Filter, SlidersHorizontal, Loader2 } from 'lucide-react';
 import PromptCard from '@/components/PromptCard';
 
@@ -22,15 +22,22 @@ type PromptListItem = {
 
 function PromptsContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const initialSearch = searchParams.get('search') || '';
   const initialCategory = searchParams.get('category') || '';
+  const initialAiTool = searchParams.get('aiTool') || '';
+  const initialDifficulty = searchParams.get('difficulty') || '';
+  const initialSort = searchParams.get('sort') || 'latest';
+  const initialPage = parseInt(searchParams.get('page') || '1', 10);
 
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [category, setCategory] = useState(initialCategory);
-  const [aiTool, setAiTool] = useState('');
-  const [difficulty, setDifficulty] = useState('');
-  const [sortBy, setSortBy] = useState('latest');
-  const [page, setPage] = useState(1);
+  const [aiTool, setAiTool] = useState(initialAiTool);
+  const [difficulty, setDifficulty] = useState(initialDifficulty);
+  const [sortBy, setSortBy] = useState(initialSort);
+  const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
   const [prompts, setPrompts] = useState<PromptListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,6 +75,23 @@ function PromptsContent() {
 
     void loadPrompts();
   }, [searchTerm, category, aiTool, difficulty, sortBy, page]);
+
+  // Sync state to URL params so they are preserved on navigation back
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.set('search', searchTerm);
+    if (category) params.set('category', category);
+    if (aiTool) params.set('aiTool', aiTool);
+    if (difficulty) params.set('difficulty', difficulty);
+    if (sortBy && sortBy !== 'latest') params.set('sort', sortBy);
+    if (page > 1) params.set('page', page.toString());
+
+    const queryString = params.toString();
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    
+    // Use replace to not clutter history stack with every filter change
+    router.replace(newUrl, { scroll: false });
+  }, [searchTerm, category, aiTool, difficulty, sortBy, page, pathname, router]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -160,7 +184,7 @@ function PromptsContent() {
               <div>
                 <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3 mt-6">Category</h4>
                 <div className="space-y-1">
-                  {['All', 'Marketing', 'Development', 'Writing', 'Design', 'Business'].map((cat) => (
+                  {['All', 'Coding', 'Writing', 'Marketing', 'Graphics & Image', 'Idea Generation', 'System Assistant', 'Other'].map((cat) => (
                     <button
                       key={cat}
                       onClick={() => { setCategory(cat === 'All' ? '' : cat); setPage(1); }}
