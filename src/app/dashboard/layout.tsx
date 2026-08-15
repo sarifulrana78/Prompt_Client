@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useSession } from '@/lib/auth-client';
+import { useSession, signOut } from '@/lib/auth-client';
 import { 
   PlusSquare, 
   List, 
@@ -15,7 +15,11 @@ import {
   CreditCard, 
   Flag,
   Menu,
-  X
+  X,
+  LayoutDashboard,
+  PlusCircle,
+  BookOpen,
+  LogOut
 } from 'lucide-react';
 
 export default function DashboardLayout({
@@ -28,6 +32,15 @@ export default function DashboardLayout({
   
   const { data: session, isPending } = useSession();
   const router = useRouter();
+
+  // Show loading spinner while checking auth status
+  if (isPending) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   // Redirect to login if not authenticated
   if (!isPending && !session) {
@@ -46,12 +59,14 @@ export default function DashboardLayout({
   ];
 
   const creatorLinks = [
-    { name: 'Analytics', href: '/dashboard/creator', icon: BarChart },
-    { name: 'Add Prompt', href: '/dashboard/add', icon: PlusSquare },
-    { name: 'My Prompts', href: '/dashboard/prompts', icon: List },
+    { name: 'My Profile', href: '/dashboard', icon: User },
+    { name: 'Creator Home', href: '/dashboard/creator', icon: LayoutDashboard },
+    { name: 'Add Prompt', href: '/dashboard/add', icon: PlusCircle },
+    { name: 'My Prompts', href: '/dashboard/prompts', icon: BookOpen },
   ];
 
   const adminLinks = [
+    { name: 'My Profile', href: '/dashboard', icon: User },
     { name: 'Analytics', href: '/dashboard/admin', icon: BarChart },
     { name: 'All Users', href: '/dashboard/admin/users', icon: Users },
     { name: 'All Prompts', href: '/dashboard/admin/prompts', icon: List },
@@ -79,13 +94,15 @@ export default function DashboardLayout({
         md:block w-full md:w-64 bg-card border-r border-border shrink-0 z-40
       `}>
         <div className="p-6 sticky top-16">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xl">
-              {userInitial}
+          <div className="flex items-center gap-4 mb-8 bg-[#1a1b2e] p-3 rounded-xl border border-white/5">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 p-[2px]">
+              <div className="w-full h-full rounded-full bg-card flex items-center justify-center text-primary font-bold text-sm bg-[#11131e]">
+                {userInitial}
+              </div>
             </div>
             <div>
-              <div className="font-bold">{userName}</div>
-              <div className="text-xs text-primary">{userRole}</div>
+              <div className="font-bold text-white text-sm">{userName}</div>
+              <div className="text-xs text-gray-400 mt-0.5 uppercase">{userRole}</div>
             </div>
           </div>
           
@@ -109,6 +126,19 @@ export default function DashboardLayout({
               );
             })}
           </nav>
+          
+          <div className="mt-8 border-t border-white/5 pt-6">
+            <button
+              onClick={async () => {
+                await signOut();
+                router.push('/');
+              }}
+              className="flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-colors text-gray-400 hover:text-white hover:bg-white/5 text-left"
+            >
+              <LogOut className="w-5 h-5" />
+              Logout
+            </button>
+          </div>
         </div>
       </aside>
 
