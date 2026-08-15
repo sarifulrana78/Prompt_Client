@@ -33,7 +33,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="text-2xl font-bold tracking-tighter text-white flex items-center gap-2 shrink-0">
           <Sparkles className="w-6 h-6 text-purple-500" />
-          <span><span className="text-white">Ai</span><span className="text-teal-400">verse</span></span>
+          <span>Prompt<span className="text-purple-500">Base</span></span>
         </Link>
         
         {/* Desktop links */}
@@ -43,7 +43,7 @@ export default function Navbar() {
           
           {session ? (
             <>
-              <Link href="/dashboard" className="text-sm text-gray-300 hover:text-white transition-colors">
+              <Link href={(session?.user as any)?.role === 'Creator' ? '/dashboard/creator' : (session?.user as any)?.role === 'Admin' ? '/dashboard/admin' : '/dashboard'} className="text-sm text-gray-300 hover:text-white transition-colors">
                 Dashboard
               </Link>
               <button onClick={handleSignOut} className="flex items-center gap-2 text-sm border border-white/20 hover:bg-white/10 text-white px-4 py-2 rounded-xl transition-colors">
@@ -88,7 +88,7 @@ export default function Navbar() {
           <Link href="/prompts" onClick={() => setMobileOpen(false)} className="block text-sm text-gray-300 hover:text-white py-2">All Prompts</Link>
           {session ? (
             <>
-              <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="block text-sm text-gray-300 hover:text-white py-2">Dashboard</Link>
+              <Link href={(session?.user as any)?.role === 'Creator' ? '/dashboard/creator' : (session?.user as any)?.role === 'Admin' ? '/dashboard/admin' : '/dashboard'} onClick={() => setMobileOpen(false)} className="block text-sm text-gray-300 hover:text-white py-2">Dashboard</Link>
               <button onClick={handleSignOut} className="w-full text-left text-sm text-red-400 hover:text-red-300 py-2">Logout</button>
             </>
           ) : (
