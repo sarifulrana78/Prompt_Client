@@ -2,16 +2,61 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Sparkles, User, Copy, Check, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import { Shield, Sparkles, User, Copy, Check, ArrowRight, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+import { signIn, signUp } from '@/lib/auth-client';
 
 export default function DemoAccountsPage() {
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [loadingRole, setLoadingRole] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedField(id);
     setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  const handleDemoLogin = async (demoEmail: string, demoPass: string, role: string) => {
+    setLoadingRole(role);
+    try {
+      // Attempt login first
+      const { error } = await signIn.email({ email: demoEmail, password: demoPass });
+      if (error) {
+        // If login fails, assume demo user doesn't exist yet and create them
+        toast.info(`Setting up ${role} demo account...`);
+        const { error: signUpErr } = await signUp.email({
+          email: demoEmail,
+          password: demoPass,
+          name: `${role} User`,
+          ...({ role } as any),
+        });
+        
+        if (signUpErr) {
+          toast.error(`Failed to create demo account: ${signUpErr.message || JSON.stringify(signUpErr)}`);
+          setLoadingRole(null);
+          return;
+        }
+        
+        // Login after successful creation
+        await signIn.email({ email: demoEmail, password: demoPass });
+      }
+      
+      toast.success(`Logged in as ${role}!`);
+      if (role === 'Creator') {
+        router.push('/dashboard/creator');
+      } else if (role === 'Admin') {
+        router.push('/dashboard/admin');
+      } else {
+        router.push('/dashboard');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Demo login failed');
+    } finally {
+      setLoadingRole(null);
+    }
   };
 
   const accounts = [
@@ -23,7 +68,7 @@ export default function DemoAccountsPage() {
       borderColor: 'hover:border-purple-500/50',
       shadowColor: 'hover:shadow-purple-500/10',
       description: 'Full access to system analytics, user management, prompt moderation, payment histories, and system configurations.',
-      email: 'admin@aiverse.com',
+      email: 'admin@promptbase.com',
       password: 'password123' // Assume generic password for demo or specific if required. Let's use 123456 as per screenshot.
     },
     {
@@ -34,7 +79,7 @@ export default function DemoAccountsPage() {
       borderColor: 'hover:border-blue-500/50',
       shadowColor: 'hover:shadow-blue-500/10',
       description: 'Access to creator analytics, adding new AI prompts, editing owned listings, and tracking prompt views.',
-      email: 'creator@aiverse.com',
+      email: 'creator@promptbase.com',
       password: 'password123'
     },
     {
@@ -45,7 +90,7 @@ export default function DemoAccountsPage() {
       borderColor: 'hover:border-emerald-500/50',
       shadowColor: 'hover:shadow-emerald-500/10',
       description: 'Access to search prompts, copy prompts to clipboard, save to collections, leave reviews, and purchase premium access.',
-      email: 'user@aiverse.com',
+      email: 'user@promptbase.com',
       password: 'password123'
     }
   ];
@@ -143,12 +188,17 @@ export default function DemoAccountsPage() {
                   </div>
                 </div>
                 
-                <Link 
-                  href="/login" 
-                  className={`mt-6 w-full py-3 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 flex items-center justify-center gap-2 text-sm font-semibold transition-all hover:gap-3`}
+                <button 
+                  onClick={() => handleDemoLogin(acc.email, acc.password, acc.type)}
+                  disabled={loadingRole !== null}
+                  className={`mt-6 w-full py-3 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 flex items-center justify-center gap-2 text-sm font-semibold transition-all hover:gap-3 disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
-                  Login as {acc.type} <ArrowRight className="w-4 h-4" />
-                </Link>
+                  {loadingRole === acc.type ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Logging in...</>
+                  ) : (
+                    <>Login as {acc.type} <ArrowRight className="w-4 h-4" /></>
+                  )}
+                </button>
               </div>
             </motion.div>
           ))}
